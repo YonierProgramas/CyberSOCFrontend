@@ -1,0 +1,33 @@
+name: Frontend CI
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  portal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_API_BASE_URL: https://cybersocbackend.onrender.com
+      VITE_SUPABASE_URL: https://cgvjthwobrlzmhmzuuvg.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_BkLdJaem4A-WloealnGVKQ_I9lSLRqV
+      VITE_SIGNUP_MODE: closed
+      VITE_CONFIRM_SIGNUP_TYPE: signup
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:config
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          CI: true
+      - run: node node_modules/playwright/cli.js test --config tests/production.config.ts
