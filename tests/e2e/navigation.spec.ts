@@ -1,4 +1,4 @@
-import { expect, test } from './support';
+import { expect, login, test } from './support';
 import type { Page } from 'playwright/test';
 
 function watch(page: Page): string[] {
@@ -76,6 +76,38 @@ test('el zoom CSS 200 % no desborda el acceso', async ({ page }) => {
     document.documentElement.style.zoom = '2';
   });
   expect(await fits(page)).toBe(true);
+});
+
+test('con sesión la barra no ofrece Acceso ni Registro y Salir cierra la sesión', async ({
+  page,
+}) => {
+  await login(page);
+  const nav = page.getByRole('navigation', { name: 'Principal' });
+  await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Cuenta']);
+  await page.getByRole('button', { name: 'Salir' }).click();
+  await expect(page).toHaveURL('/acceso');
+  await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Registro', 'Acceso']);
+  await expect(page.getByRole('button', { name: 'Salir' })).toHaveCount(0);
+});
+
+test('con sesión, Registro y Acceso del historial llevan a la cuenta', async ({ page }) => {
+  await page.goto('/registro');
+  await page
+    .getByRole('navigation', { name: 'Principal' })
+    .getByRole('link', { name: 'Acceso' })
+    .click();
+  await page.getByLabel('Correo', { exact: true }).fill('a@example.invalid');
+  await page.getByLabel('Contraseña', { exact: true }).fill('fake-password');
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(page).toHaveURL('/cuenta');
+  // Al entrar, Acceso se reemplaza en el historial: atrás ya no muestra el formulario.
+  await page.goBack();
+  await expect(page).toHaveURL('/cuenta');
+  await expect(page.getByRole('heading', { level: 1, name: 'Tu cuenta' })).toBeVisible();
+  await expect(page.getByText('Registro cerrado. La demo no acepta cuentas nuevas.')).toHaveCount(
+    0,
+  );
+  await expect(page.getByLabel('Correo', { exact: true })).toHaveCount(0);
 });
 
 async function fits(page: Page): Promise<boolean> {

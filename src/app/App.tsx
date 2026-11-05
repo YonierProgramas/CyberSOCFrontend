@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { isProtected, routeByPath, routes } from './navigation';
+import { isGuestOnly, isProtected, routeByPath } from './navigation';
 import { readPublicConfig } from '../config/publicConfig';
 import { createPortalRuntime, type PortalRuntime } from './runtime';
 import { PortalProvider, useSession } from './portal';
@@ -44,6 +44,8 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
   const route = routeByPath(path);
   const signedIn = session?.kind === 'access';
   const blocked = Boolean(route && isProtected(route) && !signedIn);
+  // Con sesión, Acceso y Registro ya no aplican: se va directo a la cuenta.
+  const alreadyIn = Boolean(route && isGuestOnly(route) && signedIn);
   useEffect(() => {
     const cleanConfirmation = () => {
       void runtime.confirmation.consume(window.location, window.history);
@@ -72,6 +74,11 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
     setPath('/acceso');
   }, [blocked]);
   useEffect(() => {
+    if (!alreadyIn) return;
+    window.history.replaceState({}, '', '/cuenta');
+    setPath('/cuenta');
+  }, [alreadyIn]);
+  useEffect(() => {
     document.title = route
       ? route.id === 'home'
         ? 'CyberSOC Defender'
@@ -81,13 +88,15 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
   }, [path, route, heading]);
   function navigate(next: string) {
     // Solo las rutas internas conocidas pueden entrar al historial.
+    // Se compara con la barra de direcciones real: una redirección pudo cambiarla ya.
     const clean = normalize(next);
-    if (!routeByPath(clean) || clean === path) return;
+    if (!routeByPath(clean) || clean === normalize(window.location.pathname)) return;
     window.history.pushState({}, '', clean);
     setPath(clean);
   }
-  let body: ReactNode = <NotFoundPage onNavigate={navigate} />;
-  if (route && !blocked) {
+  // Mientras una redirección está pendiente no se pinta la página de error.
+  let body: ReactNode = route ? null : <NotFoundPage onNavigate={navigate} />;
+  if (route && !blocked && !alreadyIn) {
     switch (route.id) {
       case 'home':
         body = <HomePage onNavigate={navigate} extra={homeExtra} />;
@@ -125,7 +134,14 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
     }
   }
   return (
-    <Shell path={path} routes={routes} signedIn={signedIn} onNavigate={navigate}>
+    <Shell
+      path={path}
+      signedIn={signedIn}
+      onNavigate={navigate}
+      onSignOut={() => {
+        void runtime.session.logout('local');
+      }}
+    >
       <h1 ref={setHeading} tabIndex={-1}>
         {route?.title ?? 'Página no encontrada'}
       </h1>

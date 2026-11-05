@@ -5,20 +5,33 @@
   --text: #17232e;
   --muted: #3d4c59;
   --link: #0b5f73;
+  --link-strong: #084a5a;
+  --on-link: #ffffff;
   --accent: #73c7da;
   --accent-text: #062832;
   --line: #c9cfc8;
   --error: #8c2f2a;
   --error-bg: #fdeceb;
   --info-bg: #e7f4f7;
+  /* Grafito del escritorio, usado solo en la banda principal de Inicio. */
+  --graphite: #111820;
+  --graphite-2: #1b2530;
+  --on-dark: #f0f4f8;
+  --on-dark-muted: #d5dee6;
+  --focus-dark: #f7fbff;
+  --shadow-1: 0 1px 2px rgba(23, 35, 46, 0.06), 0 1px 3px rgba(23, 35, 46, 0.08);
+  --shadow-2: 0 0.75rem 2rem rgba(23, 35, 46, 0.14);
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
   --space-5: 1.5rem;
   --space-6: 2rem;
+  --space-7: 3rem;
   --radius: 0.5rem;
   --radius-lg: 0.75rem;
+  --radius-xl: 1.25rem;
+  --wrap-wide: 72rem;
   --control: 2.75rem;
   font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: 100%;
@@ -97,54 +110,15 @@ a:hover {
   flex-direction: column;
 }
 
-.top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3) var(--space-4);
-  padding: var(--space-4);
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: inherit;
-  text-decoration: none;
-  font-weight: 700;
-}
-.brand svg {
-  width: 2rem;
-  height: 2rem;
-  flex: none;
-}
-
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-.nav a,
-.subnav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--control);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius);
-  text-decoration: none;
-}
-.nav a[aria-current='page'],
-.subnav a[aria-current='page'] {
-  background: var(--info-bg);
-  font-weight: 700;
-}
+/* La barra superior está en shell.css y la portada en home.css. */
 
 .wrap {
   width: min(40rem, calc(100% - 2rem));
   margin: var(--space-5) auto var(--space-6);
   align-self: center;
+}
+.wrap-wide {
+  width: min(var(--wrap-wide), calc(100% - 2rem));
 }
 
 h1 {
@@ -226,6 +200,8 @@ main#contenido:focus {
 }
 button,
 .button {
+  min-height: var(--control);
+  border-radius: var(--radius);
   border: 0;
   background: var(--accent);
   color: var(--accent-text);
@@ -295,8 +271,5 @@ html[data-scaled] dialog {
 @media (max-width: 40rem) {
   h1 {
     font-size: 1.5rem;
-  }
-  .top {
-    align-items: stretch;
   }
 }
