@@ -152,9 +152,11 @@ h1 {
   line-height: 1.25;
   margin: 0 0 var(--space-4);
 }
-h1:focus {
-  outline: 3px solid var(--link);
-  outline-offset: 4px;
+/* El foco pasa al título en cada cambio de página para que el lector de pantalla lo anuncie.
+   El título no es un control, así que no se dibuja el anillo: era el recuadro oscuro. */
+h1:focus,
+h1:focus-visible {
+  outline: none;
 }
 h2 {
   font-size: 1.25rem;
