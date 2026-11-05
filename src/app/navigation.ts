@@ -1,23 +1,69 @@
+// guestOnly: la ruta solo tiene sentido sin sesión (entrar o pedir cuenta). Con sesión no se
+// muestra en la barra y, si se abre por dirección, el portal lleva a la cuenta.
 export const routes = [
-  { id: 'home', path: '/', title: 'CyberSOC Defender', nav: 'Inicio', access: 'public' },
-  { id: 'access', path: '/acceso', title: 'Acceso', nav: 'Acceso', access: 'public' },
-  { id: 'register', path: '/registro', title: 'Registro', nav: 'Registro', access: 'public' },
-  { id: 'recover', path: '/recuperar', title: 'Recuperar acceso', nav: null, access: 'public' },
-  { id: 'confirm', path: '/auth/confirm', title: 'Confirmar enlace', nav: null, access: 'public' },
+  {
+    id: 'home',
+    path: '/',
+    title: 'CyberSOC Defender',
+    nav: 'Inicio',
+    access: 'public',
+    guestOnly: false,
+  },
+  {
+    id: 'register',
+    path: '/registro',
+    title: 'Registro',
+    nav: 'Registro',
+    access: 'public',
+    guestOnly: true,
+  },
+  {
+    id: 'access',
+    path: '/acceso',
+    title: 'Acceso',
+    nav: 'Acceso',
+    access: 'public',
+    guestOnly: true,
+  },
+  {
+    id: 'recover',
+    path: '/recuperar',
+    title: 'Recuperar acceso',
+    nav: null,
+    access: 'public',
+    guestOnly: false,
+  },
+  {
+    id: 'confirm',
+    path: '/auth/confirm',
+    title: 'Confirmar enlace',
+    nav: null,
+    access: 'public',
+    guestOnly: false,
+  },
   {
     id: 'newPassword',
     path: '/nueva-contrasena',
     title: 'Nueva contraseña',
     nav: null,
     access: 'public',
+    guestOnly: false,
   },
-  { id: 'account', path: '/cuenta', title: 'Tu cuenta', nav: 'Cuenta', access: 'protected' },
+  {
+    id: 'account',
+    path: '/cuenta',
+    title: 'Tu cuenta',
+    nav: 'Cuenta',
+    access: 'protected',
+    guestOnly: false,
+  },
   {
     id: 'preferences',
     path: '/cuenta/preferencias',
     title: 'Preferencias',
     nav: null,
     access: 'protected',
+    guestOnly: false,
   },
   {
     id: 'consents',
@@ -25,9 +71,24 @@ export const routes = [
     title: 'Consentimientos',
     nav: null,
     access: 'protected',
+    guestOnly: false,
   },
-  { id: 'download', path: '/cuenta/descarga', title: 'Descarga', nav: null, access: 'protected' },
-  { id: 'devices', path: '/cuenta/equipos', title: 'Equipos', nav: null, access: 'protected' },
+  {
+    id: 'download',
+    path: '/cuenta/descarga',
+    title: 'Descarga',
+    nav: null,
+    access: 'protected',
+    guestOnly: false,
+  },
+  {
+    id: 'devices',
+    path: '/cuenta/equipos',
+    title: 'Equipos',
+    nav: null,
+    access: 'protected',
+    guestOnly: false,
+  },
 ] as const;
 
 export type RouteId = (typeof routes)[number]['id'];
@@ -44,4 +105,18 @@ export function routeByPath(pathname: string): Route | undefined {
 
 export function isProtected(route: Route | undefined): boolean {
   return route?.access === 'protected';
+}
+
+export function isGuestOnly(route: Route | undefined): boolean {
+  return route?.guestOnly === true;
+}
+
+// Enlaces de la barra principal. Sin sesión: Inicio, Registro y Acceso (el último, destacado).
+// Con sesión: Inicio y Cuenta; nunca Acceso ni Registro. Recorre las 11 rutas: O(n).
+export function navItems(signedIn: boolean): Route[] {
+  return routes.filter((route) => {
+    if (route.nav === null) return false;
+    if (signedIn) return !route.guestOnly;
+    return route.access === 'public';
+  });
 }

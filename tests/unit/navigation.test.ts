@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isProtected, routeByPath, routes } from '../../src/app/navigation';
+import { isGuestOnly, isProtected, navItems, routeByPath, routes } from '../../src/app/navigation';
 
 describe('rutas', () => {
   it('guarda un solo destino por path', () => {
@@ -14,5 +14,17 @@ describe('rutas', () => {
     expect(isProtected(routeByPath('/cuenta/descarga'))).toBe(true);
     expect(isProtected(routeByPath('/registro'))).toBe(false);
     expect(isProtected(undefined)).toBe(false);
+  });
+
+  it('con sesión la barra no ofrece Acceso ni Registro', () => {
+    expect(navItems(false).map((route) => route.nav)).toEqual(['Inicio', 'Registro', 'Acceso']);
+    expect(navItems(true).map((route) => route.nav)).toEqual(['Inicio', 'Cuenta']);
+  });
+
+  it('solo Acceso y Registro son exclusivas de quien no ha entrado', () => {
+    const guestOnly = routes.filter((route) => isGuestOnly(route)).map((route) => route.path);
+    expect(guestOnly).toEqual(['/registro', '/acceso']);
+    expect(isGuestOnly(routeByPath('/recuperar'))).toBe(false);
+    expect(isGuestOnly(undefined)).toBe(false);
   });
 });
