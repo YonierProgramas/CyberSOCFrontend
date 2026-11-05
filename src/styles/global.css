@@ -1,5 +1,6 @@
 @import './tokens.css';
 @import './shell.css';
+@import './home.css';
 
 .consent-accept {
   display: flex;

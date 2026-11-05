@@ -96,10 +96,18 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
   }
   // Mientras una redirección está pendiente no se pinta la página de error.
   let body: ReactNode = route ? null : <NotFoundPage onNavigate={navigate} />;
+  const isHome = route?.id === 'home';
   if (route && !blocked && !alreadyIn) {
     switch (route.id) {
       case 'home':
-        body = <HomePage onNavigate={navigate} extra={homeExtra} />;
+        body = (
+          <HomePage
+            signedIn={signedIn}
+            headingRef={setHeading}
+            onNavigate={navigate}
+            extra={homeExtra}
+          />
+        );
         break;
       case 'access':
         body = <AccessPage onNavigate={navigate} notice={notice} />;
@@ -137,14 +145,17 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
     <Shell
       path={path}
       signedIn={signedIn}
+      wide={isHome}
       onNavigate={navigate}
       onSignOut={() => {
         void runtime.session.logout('local');
       }}
     >
-      <h1 ref={setHeading} tabIndex={-1}>
-        {route?.title ?? 'Página no encontrada'}
-      </h1>
+      {isHome ? null : (
+        <h1 ref={setHeading} tabIndex={-1}>
+          {route?.title ?? 'Página no encontrada'}
+        </h1>
+      )}
       {route && isProtected(route) && signedIn ? (
         <AccountNav path={path} onNavigate={navigate} />
       ) : null}

@@ -1,0 +1,249 @@
+/* Portada. Móvil primero: una columna; desde 56rem la banda principal usa dos columnas.
+   Pares de color de la guía visual S7: texto #F0F4F8 sobre grafito #111820 (16,17:1),
+   acento #73C7DA sobre grafito (9,28:1), texto #062832 sobre acento (8,04:1). */
+
+.home {
+  display: grid;
+  gap: var(--space-7);
+}
+
+/* Banda principal en grafito, el mismo fondo de la aplicación de escritorio. */
+.hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: var(--space-6);
+  align-items: center;
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-xl);
+  color: var(--on-dark);
+  background:
+    radial-gradient(circle at 85% 20%, rgba(115, 199, 218, 0.22), transparent 45%),
+    radial-gradient(circle at 10% 110%, rgba(11, 95, 115, 0.55), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(240, 244, 248, 0.04) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(90deg, rgba(240, 244, 248, 0.04) 0 1px, transparent 1px 32px),
+    var(--graphite);
+  box-shadow: var(--shadow-2);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-3);
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0 0 var(--space-4);
+  color: var(--on-dark);
+  font-size: clamp(2rem, 1.2rem + 3.5vw, 3.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.hero-lead {
+  margin: 0 0 var(--space-5);
+  max-width: 34rem;
+  color: var(--on-dark-muted);
+  font-size: 1.125rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.hero-actions .button {
+  padding-inline: var(--space-5);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.hero-actions .button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.5rem 1.25rem rgba(115, 199, 218, 0.25);
+}
+.hero-actions .button.ghost {
+  background: transparent;
+  color: var(--on-dark);
+  border: 1px solid var(--accent);
+}
+.hero-actions .button.ghost:hover {
+  background: rgba(115, 199, 218, 0.12);
+  box-shadow: none;
+}
+.hero :focus-visible {
+  outline-color: var(--focus-dark);
+}
+
+/* Escudo decorativo con anillos y una línea de escaneo. */
+.hero-art {
+  position: relative;
+  display: none;
+  place-items: center;
+  aspect-ratio: 1;
+  width: min(100%, 18rem);
+  justify-self: center;
+}
+.ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(115, 199, 218, 0.35);
+  border-radius: 50%;
+}
+.ring-2 {
+  inset: 14%;
+  border-color: rgba(115, 199, 218, 0.5);
+}
+.ring-3 {
+  inset: 28%;
+  border-style: dashed;
+}
+.hero-shield {
+  position: relative;
+  width: 45%;
+  height: auto;
+  filter: drop-shadow(0 0 1.5rem rgba(115, 199, 218, 0.45));
+}
+.hero-shield .shield-outer {
+  fill: var(--accent);
+}
+.hero-shield .shield-inner {
+  fill: var(--graphite-2);
+}
+.scan-line {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 20%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scan 3.2s ease-in-out infinite alternate;
+}
+@keyframes scan {
+  to {
+    top: 78%;
+  }
+}
+
+@media (min-width: 56rem) {
+  .hero {
+    grid-template-columns: 1.4fr 1fr;
+    padding: var(--space-7) var(--space-7);
+  }
+  .hero-art {
+    display: grid;
+  }
+}
+
+/* Secciones informativas. */
+.home-section h2,
+.privacy h2 {
+  margin: 0 0 var(--space-4);
+  font-size: 1.5rem;
+}
+
+.features,
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+}
+
+.feature {
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+.feature:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-2);
+}
+.feature h3,
+.step h3 {
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: 1.0625rem;
+}
+.feature p,
+.step p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.feature-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.55rem;
+  border-radius: var(--radius);
+  background: var(--info-bg);
+  fill: none;
+  stroke: var(--link);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Pasos numerados con un contador CSS: el número sale del orden de la lista. */
+.steps {
+  counter-reset: paso;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+}
+.step {
+  counter-increment: paso;
+  position: relative;
+  padding: var(--space-5);
+  padding-top: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--link);
+  border-radius: var(--radius-lg);
+}
+.step::before {
+  content: counter(paso);
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--link);
+  color: var(--on-link);
+  font-weight: 700;
+}
+
+.privacy {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--info-bg);
+  border-left: 6px solid var(--link);
+}
+.privacy p {
+  margin: 0;
+  max-width: 48rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line {
+    animation: none;
+    top: 50%;
+  }
+  .feature,
+  .hero-actions .button {
+    transition: none;
+  }
+  .feature:hover,
+  .hero-actions .button:hover {
+    transform: none;
+  }
+}

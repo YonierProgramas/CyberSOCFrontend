@@ -84,10 +84,17 @@ test('con sesión la barra no ofrece Acceso ni Registro y Salir cierra la sesió
   await login(page);
   const nav = page.getByRole('navigation', { name: 'Principal' });
   await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Cuenta']);
+  await nav.getByRole('link', { name: 'Inicio' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'CyberSOC Defender' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ir a la descarga' })).toHaveAttribute(
+    'href',
+    '/cuenta/descarga',
+  );
+  await expect(page.getByRole('link', { name: 'Entrar' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Salir' }).click();
-  await expect(page).toHaveURL('/acceso');
   await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Registro', 'Acceso']);
   await expect(page.getByRole('button', { name: 'Salir' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/acceso');
 });
 
 test('con sesión, Registro y Acceso del historial llevan a la cuenta', async ({ page }) => {
@@ -108,6 +115,23 @@ test('con sesión, Registro y Acceso del historial llevan a la cuenta', async ({
     0,
   );
   await expect(page.getByLabel('Correo', { exact: true })).toHaveCount(0);
+});
+
+test('la portada informa y cabe en 360 px sin recuadro en el título', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto('/');
+  const title = page.getByRole('heading', { level: 1, name: 'CyberSOC Defender' });
+  await expect(title).toBeFocused();
+  expect(await title.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe('none');
+  await expect(page.getByRole('heading', { level: 2 })).toHaveText([
+    'Qué hace la aplicación',
+    'Cómo empezar',
+    'El portal no ve tus archivos',
+  ]);
+  await expect(page.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/acceso');
+  expect(await fits(page)).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  expect(await fits(page)).toBe(true);
 });
 
 async function fits(page: Page): Promise<boolean> {
