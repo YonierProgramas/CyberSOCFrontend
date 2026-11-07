@@ -2,6 +2,17 @@
    Una columna en móvil (primero el formulario); dos columnas desde 56rem con el panel a la
    izquierda. El panel solo cambia de lugar con CSS: el orden del DOM no varía. */
 
+/* Las bandas en grafito usan siempre los colores del modo oscuro: en el tema claro, el teal
+   oscuro de --primary/--accent no contrasta sobre #0B1220. */
+.hero,
+.auth-aside {
+  --accent: var(--cyan);
+  --primary: var(--cyan);
+  --primary-hover: #67e8f9;
+  --on-primary: #062832;
+  --tone-accent-fill: var(--cyan);
+}
+
 .auth {
   display: grid;
   gap: var(--space-5);

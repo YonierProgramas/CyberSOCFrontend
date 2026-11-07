@@ -31,7 +31,7 @@ const pageMeta: Partial<Record<string, { icon: IconName; subtitle: string }>> = 
 };
 // Pantallas públicas de acceso: comparten AuthLayout (tarjeta + panel de marca).
 const authMeta: Partial<Record<string, { icon: IconName; subtitle: string }>> = {
-  access: { icon: 'lock', subtitle: 'Entra con una cuenta existente de la demo.' },
+  access: { icon: 'lock', subtitle: 'Gestiona tu cuenta y la descarga del antivirus.' },
   register: { icon: 'user', subtitle: 'La demo usa cuentas de prueba creadas de antemano.' },
   recover: { icon: 'refresh', subtitle: 'Pide un enlace para crear una contraseña nueva.' },
   confirm: { icon: 'check', subtitle: 'Comprobamos el enlace que abriste desde el correo.' },
