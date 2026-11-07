@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { acceptedDownloadUrl } from './releaseUrl';
+export { acceptedDownloadUrl } from './releaseUrl';
 const uuid = z.string().uuid();
 const timestamp = z.string().datetime();
 const displayName = z
@@ -63,34 +65,6 @@ export const releaseSchema = z
       .strict(),
   })
   .strict();
-export function acceptedDownloadUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    const prefix = '/YonierProgramas/CyberSOC/releases/download/';
-    const rest = url.pathname.slice(prefix.length);
-    return (
-      value.startsWith('https://github.com' + prefix) &&
-      url.origin === 'https://github.com' &&
-      url.username === '' &&
-      url.password === '' &&
-      url.search === '' &&
-      url.hash === '' &&
-      url.pathname.startsWith(prefix) &&
-      rest.split('/').length === 2 &&
-      rest.split('/').every((part) => {
-        const decoded = decodeURIComponent(part);
-        return (
-          decoded.length > 0 &&
-          decoded !== '.' &&
-          decoded !== '..' &&
-          !/[\\/\u0000-\u0020\u007f]/.test(decoded)
-        );
-      })
-    );
-  } catch {
-    return false;
-  }
-}
 export const downloadSchema = z
   .object({
     requestId: uuid,

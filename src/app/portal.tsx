@@ -37,7 +37,8 @@ export function useResource<T>(load: () => Promise<T>) {
   const [state, setState] = useState<Resource<T>>({ status: 'loading' });
   useEffect(() => {
     let active = true;
-    void load()
+    const request = load();
+    void request
       .then((data) => {
         if (active && session.getSnapshot().epoch === epoch) setState({ status: 'ready', data });
       })
@@ -47,6 +48,7 @@ export function useResource<T>(load: () => Promise<T>) {
       });
     return () => {
       active = false;
+      if ('cancel' in request && typeof request.cancel === 'function') request.cancel();
     };
   }, [load, revision, epoch, session]);
   return {

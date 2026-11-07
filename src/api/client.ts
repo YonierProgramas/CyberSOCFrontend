@@ -3,6 +3,7 @@ import type { PublicConfig } from '../config/publicConfig';
 import type { SessionStore } from '../auth/session';
 import { PortalError, asPortalError, knownCode } from './fault';
 import { requestJson, abortableDelay, type Fetcher } from './http';
+import { ReadPool } from './readPool';
 import {
   meSchema,
   profileSchema,
@@ -51,14 +52,37 @@ export function createAccountApi(
   fetcher: Fetcher = fetch,
 ) {
   let limitedUntil = 0;
-  async function call<T>(path: string, method: string, body: unknown, schema: z.ZodType<T>) {
+  let limitedEpoch = session.getSnapshot().epoch;
+  const reads = new ReadPool();
+  function read<T>(path: string, schema: z.ZodType<T>) {
+    const epoch = session.getSnapshot().epoch;
+    return reads.read(epoch + ':' + path, (signal) => {
+      session.assertCurrent(epoch);
+      return call(path, 'GET', undefined, schema, signal);
+    });
+  }
+  async function call<T>(
+    path: string,
+    method: string,
+    body: unknown,
+    schema: z.ZodType<T>,
+    resourceSignal?: AbortSignal,
+  ) {
+    if (limitedEpoch !== session.getSnapshot().epoch) {
+      limitedEpoch = session.getSnapshot().epoch;
+      limitedUntil = 0;
+    }
     if (Date.now() < limitedUntil)
       throw new PortalError('RATE_LIMITED', 429, limitedUntil - Date.now());
     const owner = session.getSnapshot().session?.userId;
     const read = method === 'GET';
     const deadline = Date.now() + 60000;
     let readRetries = 0;
-    return session.authorized(async (token, signal) => {
+    return session.authorized(async (token, sessionSignal) => {
+      const signal = resourceSignal
+        ? AbortSignal.any([sessionSignal, resourceSignal])
+        : sessionSignal;
+      if (signal.aborted) throw new PortalError('SESSION_ENDED');
       for (let attempt = 0; attempt < 3; attempt += 1) {
         try {
           if (read && Date.now() >= deadline) throw new PortalError('TIMEOUT');
@@ -139,11 +163,11 @@ export function createAccountApi(
     return parsed.data;
   }
   return {
-    loadMe: () => call('/v1/me', 'GET', undefined, meSchema),
+    loadMe: () => read('/v1/me', meSchema),
     saveProfile: (value: unknown) => call('/v1/me', 'PUT', input(profileSchema, value), meSchema),
     savePreferences: (value: unknown) =>
       call('/v1/me/preferences', 'PATCH', input(preferencesSchema, value), preferencesSchema),
-    loadConsents: () => call('/v1/me/consents', 'GET', undefined, consentsSchema),
+    loadConsents: () => read('/v1/me/consents', consentsSchema),
     saveConsent(purpose: unknown, value: unknown) {
       const code = input(purposeSchema, purpose);
       const body = input(
@@ -155,14 +179,13 @@ export function createAccountApi(
       );
       return call('/v1/me/consents/' + code, 'PUT', body, consentSchema);
     },
-    latestRelease: () =>
-      call('/v1/releases/latest?platform=windows-x64', 'GET', undefined, releaseSchema),
+    latestRelease: () => read('/v1/releases/latest?platform=windows-x64', releaseSchema),
     requestDownload: () =>
       call('/v1/downloads', 'POST', { platform: 'windows-x64' }, downloadSchema),
     loadDevices(cursor: string | null = null) {
       const suffix =
         cursor === null ? '' : '&cursor=' + encodeURIComponent(input(cursorSchema, cursor));
-      return call('/v1/devices?limit=20' + suffix, 'GET', undefined, devicePageSchema);
+      return read('/v1/devices?limit=20' + suffix, devicePageSchema);
     },
     revokeDevice(id: unknown) {
       return call('/v1/devices/' + input(z.string().uuid(), id), 'DELETE', undefined, z.null());

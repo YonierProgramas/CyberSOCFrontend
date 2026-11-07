@@ -1,6 +1,16 @@
 import { PortalError } from './fault';
 export type Fetcher = typeof fetch;
 export type HttpResult = { ok: boolean; status: number; data: unknown; retryAfterMs: number };
+export function retryAfterMs(value: string | null, now = Date.now()): number {
+  if (!value?.trim()) return 0;
+  const raw = value.trim();
+  const delay = /^\d+$/.test(raw)
+    ? Number(raw) * 1000
+    : /^[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(raw)
+      ? Date.parse(raw) - now
+      : NaN;
+  return Number.isFinite(delay) && delay > 0 ? Math.min(2147483647, delay) : 0;
+}
 async function boundedJson(response: Response): Promise<unknown> {
   if (response.status === 204) return null;
   if (!response.headers.get('content-type')?.includes('application/json')) {
@@ -61,12 +71,11 @@ export async function requestJson(
         referrerPolicy: 'no-referrer',
         cache: 'no-store',
       });
-      const seconds = Number(response.headers.get('retry-after'));
       return {
         ok: response.ok,
         status: response.status,
         data: await boundedJson(response),
-        retryAfterMs: Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 0,
+        retryAfterMs: retryAfterMs(response.headers.get('retry-after')),
       };
     })();
     return await Promise.race([operation, interrupted]);
