@@ -48,7 +48,7 @@ export function AccessPage({
         }, true);
       }}
     >
-      <p>
+      <p className="muted">
         Usa una cuenta existente de la demo. Al recargar o abrir otra pestaña tendrás que entrar de
         nuevo.
       </p>
@@ -75,20 +75,19 @@ export function AccessPage({
         onToggle={() => setRevealed((value) => !value)}
         onChange={setPassword}
       />
-      <button type="submit" disabled={action.busy}>
+      <button type="submit" className="block" disabled={action.busy} aria-busy={action.pending}>
+        {action.pending ? <span className="spinner" aria-hidden="true" /> : null}
         Entrar
       </button>
       <ActionStatus {...action} />
-      <p>
+      <div className="auth-links">
         <RouteLink href="/recuperar" onNavigate={onNavigate}>
           Olvidé mi contraseña
         </RouteLink>
-      </p>
-      <p>
         <RouteLink href="/registro" onNavigate={onNavigate}>
           Cómo se obtiene una cuenta
         </RouteLink>
-      </p>
+      </div>
     </form>
   );
 }

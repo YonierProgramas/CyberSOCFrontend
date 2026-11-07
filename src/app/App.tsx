@@ -9,6 +9,7 @@ import { AccountPage } from '../pages/AccountPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { applyTheme } from './theme';
 import { Icon, type IconName } from '../components/Icon';
+import { AuthLayout } from '../components/AuthLayout';
 import { ConfirmPage } from '../pages/ConfirmPage';
 import { ConsentsPage } from '../pages/ConsentsPage';
 import { DevicesPage } from '../pages/DevicesPage';
@@ -27,6 +28,14 @@ const pageMeta: Partial<Record<string, { icon: IconName; subtitle: string }>> = 
   consents: { icon: 'privacy', subtitle: 'Decide qué datos opcionales puede guardar tu cuenta.' },
   download: { icon: 'download', subtitle: 'El instalador de la aplicación de escritorio.' },
   devices: { icon: 'devices', subtitle: 'Los equipos que pueden usar tu cuenta.' },
+};
+// Pantallas públicas de acceso: comparten AuthLayout (tarjeta + panel de marca).
+const authMeta: Partial<Record<string, { icon: IconName; subtitle: string }>> = {
+  access: { icon: 'lock', subtitle: 'Entra con una cuenta existente de la demo.' },
+  register: { icon: 'user', subtitle: 'La demo usa cuentas de prueba creadas de antemano.' },
+  recover: { icon: 'refresh', subtitle: 'Pide un enlace para crear una contraseña nueva.' },
+  confirm: { icon: 'check', subtitle: 'Comprobamos el enlace que abriste desde el correo.' },
+  newPassword: { icon: 'lock', subtitle: 'Elige una contraseña nueva para tu cuenta.' },
 };
 export function App({ runtime, homeExtra }: { runtime?: PortalRuntime; homeExtra?: ReactNode }) {
   const config = readPublicConfig(import.meta.env);
@@ -113,6 +122,7 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
   let body: ReactNode = route ? null : <NotFoundPage onNavigate={navigate} />;
   const isHome = route?.id === 'home';
   const meta = route && signedIn ? pageMeta[route.id] : undefined;
+  const auth = route && !blocked && !alreadyIn ? authMeta[route.id] : undefined;
   if (route && !blocked && !alreadyIn) {
     switch (route.id) {
       case 'home':
@@ -163,13 +173,13 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
     <Shell
       path={path}
       signedIn={signedIn}
-      wide={isHome || Boolean(route && isProtected(route) && signedIn)}
+      wide={isHome || Boolean(auth) || Boolean(route && isProtected(route) && signedIn)}
       onNavigate={navigate}
       onSignOut={() => {
         void runtime.session.logout('local');
       }}
     >
-      {isHome ? null : (
+      {isHome || auth ? null : (
         <header className={meta ? 'page-head' : 'page-head plain'}>
           {meta ? (
             <span className="page-icon">
@@ -191,7 +201,18 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
             : path
         }
       >
-        {body}
+        {auth && route ? (
+          <AuthLayout
+            title={route.title}
+            subtitle={auth.subtitle}
+            icon={auth.icon}
+            headingRef={setHeading}
+          >
+            {body}
+          </AuthLayout>
+        ) : (
+          body
+        )}
       </div>
     </Shell>
   );

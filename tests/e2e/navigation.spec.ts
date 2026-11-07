@@ -175,6 +175,32 @@ test('la portada informa y cabe en 360 px sin recuadro en el título', async ({ 
   expect(await fits(page)).toBe(true);
 });
 
+test('acceso: tarjeta y panel de marca, foco en el título y sin datos privados', async ({
+  page,
+}) => {
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto('/acceso');
+    const title = page.getByRole('heading', { level: 1, name: 'Acceso' });
+    await expect(title).toBeFocused();
+    await expect(
+      page.getByRole('complementary', { name: 'Sobre CyberSOC Defender' }),
+    ).toBeVisible();
+    await expect(page.getByText('Sesión activa')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Olvidé mi contraseña' })).toBeVisible();
+    const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(background).toBe(scheme === 'dark' ? 'rgb(11, 18, 32)' : 'rgb(243, 246, 250)');
+  }
+  // El panel de marca no tiene controles: no cambia el orden de tabulación.
+  await expect(
+    page.getByRole('complementary').locator('a, button, input, select, textarea'),
+  ).toHaveCount(0);
+  for (const width of [360, 800, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    expect(await fits(page), String(width)).toBe(true);
+  }
+});
+
 async function fits(page: Page): Promise<boolean> {
   return page.evaluate(
     () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,

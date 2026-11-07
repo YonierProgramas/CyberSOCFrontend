@@ -23,16 +23,17 @@ export function ConfirmPage({ onNavigate }: { onNavigate: (path: string) => void
           ? new PortalError('LINK_INVALID').message
           : 'Verificando el enlace. Espera un momento.'}
       </StatusMessage>
-      <p>
+      <p className="muted">
+        El enlace se valida una sola vez y se borra de la barra de direcciones antes de comprobarlo.
+      </p>
+      <div className="auth-links">
         <RouteLink href="/acceso" onNavigate={onNavigate}>
           Volver al acceso
         </RouteLink>
-      </p>
-      <p>
         <RouteLink href="/recuperar" onNavigate={onNavigate}>
           Pedir enlace nuevo
         </RouteLink>
-      </p>
+      </div>
     </div>
   );
 }

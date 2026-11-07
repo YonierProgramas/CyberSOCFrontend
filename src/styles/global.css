@@ -2,6 +2,7 @@
 @import './shell.css';
 @import './home.css';
 @import './pages.css';
+@import './auth.css';
 
 .consent-accept {
   display: flex;

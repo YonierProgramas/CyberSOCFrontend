@@ -339,6 +339,8 @@ select:hover {
 }
 input[aria-invalid='true'] {
   border-color: var(--tone-danger-fill);
+  /* Al enfocar con zoom, el navegador deja sitio para el mensaje de error de debajo. */
+  scroll-margin-bottom: 4rem;
 }
 main#contenido:focus {
   outline: 3px solid var(--focus);

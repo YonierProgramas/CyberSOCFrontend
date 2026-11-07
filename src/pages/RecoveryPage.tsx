@@ -28,7 +28,10 @@ export function RecoveryPage({ onNavigate }: { onNavigate: (path: string) => voi
         });
       }}
     >
-      <p>Recuperación para cuentas existentes. La demo mantiene el registro cerrado.</p>
+      <p className="muted">
+        Recuperación para cuentas existentes. La demo mantiene el registro cerrado. El mensaje es el
+        mismo exista o no la cuenta, para no revelar qué correos están registrados.
+      </p>
       <FormField
         id="correo-recuperar"
         label="Correo"
@@ -39,15 +42,16 @@ export function RecoveryPage({ onNavigate }: { onNavigate: (path: string) => voi
         inputRef={ref}
         onChange={setEmail}
       />
-      <button type="submit" disabled={action.busy}>
+      <button type="submit" className="block" disabled={action.busy} aria-busy={action.pending}>
+        {action.pending ? <span className="spinner" aria-hidden="true" /> : null}
         Enviar enlace
       </button>
       <ActionStatus {...action} />
-      <p>
+      <div className="auth-links">
         <RouteLink href="/acceso" onNavigate={onNavigate}>
           Volver al acceso
         </RouteLink>
-      </p>
+      </div>
     </form>
   );
 }
