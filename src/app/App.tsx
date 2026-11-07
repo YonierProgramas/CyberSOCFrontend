@@ -129,12 +129,7 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
         body = signedIn ? (
           <DashboardPage headingRef={setHeading} onNavigate={navigate} extra={homeExtra} />
         ) : (
-          <HomePage
-            signedIn={signedIn}
-            headingRef={setHeading}
-            onNavigate={navigate}
-            extra={homeExtra}
-          />
+          <HomePage headingRef={setHeading} onNavigate={navigate} extra={homeExtra} />
         );
         break;
       case 'access':

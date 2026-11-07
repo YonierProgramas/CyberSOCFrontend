@@ -166,10 +166,23 @@ test('la portada informa y cabe en 360 px sin recuadro en el título', async ({ 
   expect(await title.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe('none');
   await expect(page.getByRole('heading', { level: 2 })).toHaveText([
     'Qué hace la aplicación',
+    'Cómo se analiza un archivo',
+    'La aplicación de escritorio',
     'Cómo empezar',
     'El portal no ve tus archivos',
   ]);
-  await expect(page.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/acceso');
+  await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute(
+    'href',
+    '/acceso',
+  );
+  await expect(page.getByRole('link', { name: 'Cómo obtener una cuenta' })).toHaveAttribute(
+    'href',
+    '/registro',
+  );
+  // Nada privado ni funciones pendientes anunciadas como disponibles antes de entrar.
+  await expect(page.getByText('Sesión activa')).toHaveCount(0);
+  await expect(page.getByText('Instalador en preparación')).toBeVisible();
+  await expect(page.locator('body')).not.toContainText(/tiempo real|100 ?% protegido/i);
   expect(await fits(page)).toBe(true);
   await page.setViewportSize({ width: 1280, height: 800 });
   expect(await fits(page)).toBe(true);
@@ -199,6 +212,14 @@ test('acceso: tarjeta y panel de marca, foco en el título y sin datos privados'
     await page.setViewportSize({ width, height: 800 });
     expect(await fits(page), String(width)).toBe(true);
   }
+});
+
+test('página inexistente ofrece volver al acceso o a la portada', async ({ page }) => {
+  await page.goto('/no-existe');
+  await expect(page.getByRole('heading', { level: 1, name: 'Página no encontrada' })).toBeVisible();
+  await page.getByRole('link', { name: 'Volver a la portada' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(page.getByRole('heading', { level: 1, name: 'CyberSOC Defender' })).toBeVisible();
 });
 
 async function fits(page: Page): Promise<boolean> {

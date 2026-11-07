@@ -1,9 +1,12 @@
 import type { ReactNode, Ref } from 'react';
+import { Icon, type IconName } from '../components/Icon';
 import { RouteLink, Shield } from '../components/Shell';
+import { Badge } from '../components/ui';
 
-// Todo lo que dice la portada es cierto para la versión actual: no hay cifras de detección,
-// porcentajes ni sellos de protección total. Los resultados viven solo en la app de escritorio.
-const features = [
+// Portada para visitantes. Todo lo que dice es cierto para la versión actual: sin cifras de
+// detección, sin «protección en tiempo real», sin vinculación de equipos ni instalador
+// publicado (ambos pendientes). Los resultados viven solo en la aplicación de escritorio.
+const features: { icon: IconName; title: string; text: string }[] = [
   {
     icon: 'scan',
     title: 'Análisis en tu equipo',
@@ -24,7 +27,36 @@ const features = [
     title: 'Asistente que explica',
     text: 'Responde en lenguaje sencillo con tu propia clave de Claude. El veredicto lo decide siempre la política de riesgo, nunca la IA.',
   },
-] as const;
+];
+
+// Recorrido real de un análisis en la aplicación de escritorio, en orden.
+const pipeline: { icon: IconName; title: string; text: string }[] = [
+  {
+    icon: 'layers',
+    title: 'Recorre carpetas',
+    text: 'Una pila (LIFO) explora las subcarpetas en profundidad, sin recursión.',
+  },
+  {
+    icon: 'scan',
+    title: 'Pone en cola',
+    text: 'Cada archivo espera en una cola acotada (FIFO): se analiza en orden de llegada.',
+  },
+  {
+    icon: 'bug',
+    title: 'Analiza por capas',
+    text: 'Hash, firmas, tipo de archivo, reglas, heurística, ejecutables PE y scripts.',
+  },
+  {
+    icon: 'privacy',
+    title: 'Decide el veredicto',
+    text: 'La política de riesgo combina las capas: Sin hallazgos, Sospechoso o Detectado.',
+  },
+  {
+    icon: 'vault',
+    title: 'Aparta si hace falta',
+    text: 'Con tu confirmación, la cuarentena cifra el archivo y permite restaurarlo.',
+  },
+];
 
 const steps = [
   {
@@ -33,7 +65,7 @@ const steps = [
   },
   {
     title: 'Descarga el instalador desde tu cuenta',
-    text: 'Aparece en Cuenta, sección Descarga, cuando la versión esté publicada.',
+    text: 'Aparece en la sección Descarga de tu panel cuando la versión esté publicada.',
   },
   {
     title: 'Instala en Windows de 64 bits',
@@ -41,52 +73,11 @@ const steps = [
   },
 ] as const;
 
-type IconName = (typeof features)[number]['icon'];
-
-function Icon({ name }: { name: IconName }) {
-  const paths: Record<IconName, ReactNode> = {
-    scan: (
-      <>
-        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4" />
-        <path d="M14 3v5h5" />
-        <circle cx="16.5" cy="15.5" r="3.5" />
-        <path d="m19 18 2.5 2.5" />
-      </>
-    ),
-    vault: (
-      <>
-        <rect x="3" y="4" width="18" height="16" rx="2" />
-        <circle cx="12" cy="12" r="3.5" />
-        <path d="M12 8.5V7M12 17v-1.5M8.5 12H7M17 12h-1.5" />
-      </>
-    ),
-    chart: (
-      <>
-        <path d="M4 20h16" />
-        <path d="M7 16v-4M12 16V7M17 16v-7" />
-      </>
-    ),
-    chat: (
-      <>
-        <path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
-        <path d="M8 9.5h8M8 12.5h5" />
-      </>
-    ),
-  };
-  return (
-    <svg className="feature-icon" viewBox="0 0 24 24" aria-hidden="true">
-      {paths[name]}
-    </svg>
-  );
-}
-
 export function HomePage({
-  signedIn,
   headingRef,
   onNavigate,
   extra,
 }: {
-  signedIn: boolean;
   headingRef: Ref<HTMLHeadingElement>;
   onNavigate: (path: string) => void;
   extra?: ReactNode;
@@ -95,7 +86,7 @@ export function HomePage({
     <div className="home">
       <section className="hero" aria-labelledby="inicio-titulo">
         <div className="hero-copy">
-          <p className="eyebrow">Antivirus de escritorio para Windows · Demo cerrada</p>
+          <p className="eyebrow">Antivirus de escritorio para Windows · Proyecto académico</p>
           <h1 id="inicio-titulo" ref={headingRef} tabIndex={-1}>
             CyberSOC Defender
           </h1>
@@ -104,26 +95,18 @@ export function HomePage({
             revertir y entiende cada resultado en lenguaje sencillo.
           </p>
           <div className="hero-actions">
-            {signedIn ? (
-              <>
-                <RouteLink href="/cuenta/descarga" onNavigate={onNavigate} className="button">
-                  Ir a la descarga
-                </RouteLink>
-                <RouteLink href="/cuenta" onNavigate={onNavigate} className="button ghost">
-                  Ver mi cuenta
-                </RouteLink>
-              </>
-            ) : (
-              <>
-                <RouteLink href="/acceso" onNavigate={onNavigate} className="button">
-                  Entrar
-                </RouteLink>
-                <RouteLink href="/registro" onNavigate={onNavigate} className="button ghost">
-                  Cómo se obtiene una cuenta
-                </RouteLink>
-              </>
-            )}
+            <RouteLink href="/acceso" onNavigate={onNavigate} className="button">
+              <Icon name="lock" />
+              Iniciar sesión
+            </RouteLink>
+            <RouteLink href="/registro" onNavigate={onNavigate} className="button ghost">
+              <Icon name="user" />
+              Cómo obtener una cuenta
+            </RouteLink>
           </div>
+          <p className="hero-note">
+            Proyecto de Estructuras de Datos · Universidad Cooperativa de Colombia · demo cerrada.
+          </p>
         </div>
         <div className="hero-art" aria-hidden="true">
           <span className="ring ring-1" />
@@ -141,12 +124,61 @@ export function HomePage({
         <ul className="features">
           {features.map((feature) => (
             <li key={feature.title} className="feature">
-              <Icon name={feature.icon} />
+              <span className="feature-icon">
+                <Icon name={feature.icon} />
+              </span>
               <h3>{feature.title}</h3>
               <p>{feature.text}</p>
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="home-section" aria-labelledby="inicio-proceso">
+        <h2 id="inicio-proceso">Cómo se analiza un archivo</h2>
+        <ol className="pipeline">
+          {pipeline.map((stage) => (
+            <li key={stage.title} className="stage">
+              <span className="stage-icon">
+                <Icon name={stage.icon} />
+              </span>
+              <h3>{stage.title}</h3>
+              <p>{stage.text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="home-section desktop-app" aria-labelledby="inicio-escritorio">
+        <div>
+          <h2 id="inicio-escritorio">La aplicación de escritorio</h2>
+          <p className="muted">
+            El portal solo gestiona tu cuenta y la descarga. Todo el análisis ocurre en la
+            aplicación, dentro de tu equipo.
+          </p>
+          <ul className="checklist">
+            <li>
+              <Icon name="windows" />
+              Windows 10/11 de 64 bits, instalación por usuario sin administrador.
+            </li>
+            <li>
+              <Icon name="check" />
+              Trae su propio motor de análisis: no necesitas instalar nada más.
+            </li>
+            <li>
+              <Icon name="check" />
+              El motor de análisis no usa la red; el asistente solo se conecta si configuras tu
+              clave.
+            </li>
+          </ul>
+        </div>
+        <div className="desktop-status">
+          <Badge tone="warn">Instalador en preparación</Badge>
+          <p className="muted">
+            Todavía no hay una versión publicada. Cuando exista, la verás en la sección Descarga
+            después de entrar.
+          </p>
+        </div>
       </section>
 
       <section className="home-section" aria-labelledby="inicio-pasos">
