@@ -33,6 +33,14 @@ test('recovery conduce a contraseña; guardar cierra sesión; recarga no recuper
   await page.goto('/auth/confirm?type=recovery&token_hash=abcdefghijklmnopqrst');
   await expect(page).toHaveURL('/nueva-contrasena');
   await page.getByLabel('Nueva contraseña', { exact: true }).fill('new-fake-password');
+  await expect(page.getByText(/Fortaleza orientativa/)).toBeVisible();
+  // Si la repetición no coincide no se envía nada al servicio.
+  await page.getByLabel('Repite la contraseña', { exact: true }).fill('otra-fake-password');
+  await page.getByRole('button', { name: 'Guardar contraseña' }).click();
+  await expect(page.getByText('Las contraseñas no coinciden.')).toBeVisible();
+  await expect(page.getByLabel('Repite la contraseña', { exact: true })).toBeFocused();
+  expect(mock.requests.filter((item) => item.path === '/auth/v1/user')).toHaveLength(0);
+  await page.getByLabel('Repite la contraseña', { exact: true }).fill('new-fake-password');
   await page.getByRole('button', { name: 'Guardar contraseña' }).click();
   await expect(page).toHaveURL('/acceso');
   await expect(
