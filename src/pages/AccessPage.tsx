@@ -41,7 +41,7 @@ export function AccessPage({
         void action.run(async () => {
           try {
             await session.signIn(email.trim(), password);
-            onNavigate('/cuenta');
+            onNavigate('/');
           } finally {
             setPassword('');
           }

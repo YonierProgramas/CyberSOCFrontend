@@ -5,7 +5,10 @@ import { createPortalRuntime, type PortalRuntime } from './runtime';
 import { PortalProvider, useSession } from './portal';
 import { Shell } from '../components/Shell';
 import { AccessPage } from '../pages/AccessPage';
-import { AccountNav, AccountPage } from '../pages/AccountPage';
+import { AccountPage } from '../pages/AccountPage';
+import { DashboardPage } from '../pages/DashboardPage';
+import { applyTheme } from './theme';
+import { Icon, type IconName } from '../components/Icon';
 import { ConfirmPage } from '../pages/ConfirmPage';
 import { ConsentsPage } from '../pages/ConsentsPage';
 import { DevicesPage } from '../pages/DevicesPage';
@@ -17,6 +20,14 @@ import { PreferencesPage } from '../pages/PreferencesPage';
 import { RecoveryPage } from '../pages/RecoveryPage';
 import { RegistrationPage } from '../pages/RegistrationPage';
 let defaultRuntime: PortalRuntime | undefined;
+// Cabecera de las páginas de la cuenta: icono y una frase que dice para qué sirve cada una.
+const pageMeta: Partial<Record<string, { icon: IconName; subtitle: string }>> = {
+  account: { icon: 'user', subtitle: 'Tu nombre visible, los datos de la cuenta y tus sesiones.' },
+  preferences: { icon: 'settings', subtitle: 'Idioma, zona horaria y apariencia del portal.' },
+  consents: { icon: 'privacy', subtitle: 'Decide qué datos opcionales puede guardar tu cuenta.' },
+  download: { icon: 'download', subtitle: 'El instalador de la aplicación de escritorio.' },
+  devices: { icon: 'devices', subtitle: 'Los equipos que pueden usar tu cuenta.' },
+};
 export function App({ runtime, homeExtra }: { runtime?: PortalRuntime; homeExtra?: ReactNode }) {
   const config = readPublicConfig(import.meta.env);
   if (!runtime && !config.ok)
@@ -44,7 +55,7 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
   const route = routeByPath(path);
   const signedIn = session?.kind === 'access';
   const blocked = Boolean(route && isProtected(route) && !signedIn);
-  // Con sesión, Acceso y Registro ya no aplican: se va directo a la cuenta.
+  // Con sesión, Acceso y Registro ya no aplican: se va directo al panel de Inicio.
   const alreadyIn = Boolean(route && isGuestOnly(route) && signedIn);
   useEffect(() => {
     const cleanConfirmation = () => {
@@ -75,9 +86,13 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
   }, [blocked]);
   useEffect(() => {
     if (!alreadyIn) return;
-    window.history.replaceState({}, '', '/cuenta');
-    setPath('/cuenta');
+    window.history.replaceState({}, '', '/');
+    setPath('/');
   }, [alreadyIn]);
+  useEffect(() => {
+    // Sin sesión no hay preferencia guardada que aplicar: se vuelve al tema del sistema.
+    if (!signedIn) applyTheme('system');
+  }, [signedIn]);
   useEffect(() => {
     document.title = route
       ? route.id === 'home'
@@ -97,10 +112,13 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
   // Mientras una redirección está pendiente no se pinta la página de error.
   let body: ReactNode = route ? null : <NotFoundPage onNavigate={navigate} />;
   const isHome = route?.id === 'home';
+  const meta = route && signedIn ? pageMeta[route.id] : undefined;
   if (route && !blocked && !alreadyIn) {
     switch (route.id) {
       case 'home':
-        body = (
+        body = signedIn ? (
+          <DashboardPage headingRef={setHeading} onNavigate={navigate} extra={homeExtra} />
+        ) : (
           <HomePage
             signedIn={signedIn}
             headingRef={setHeading}
@@ -125,7 +143,7 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
         body = <NewPasswordPage session={session} onNavigate={navigate} />;
         break;
       case 'account':
-        body = <AccountPage />;
+        body = <AccountPage onNavigate={navigate} />;
         break;
       case 'preferences':
         body = <PreferencesPage />;
@@ -145,20 +163,27 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
     <Shell
       path={path}
       signedIn={signedIn}
-      wide={isHome}
+      wide={isHome || Boolean(route && isProtected(route) && signedIn)}
       onNavigate={navigate}
       onSignOut={() => {
         void runtime.session.logout('local');
       }}
     >
       {isHome ? null : (
-        <h1 ref={setHeading} tabIndex={-1}>
-          {route?.title ?? 'Página no encontrada'}
-        </h1>
+        <header className={meta ? 'page-head' : 'page-head plain'}>
+          {meta ? (
+            <span className="page-icon">
+              <Icon name={meta.icon} />
+            </span>
+          ) : null}
+          <div>
+            <h1 ref={setHeading} tabIndex={-1}>
+              {route?.title ?? 'Página no encontrada'}
+            </h1>
+            {meta ? <p className="page-subtitle">{meta.subtitle}</p> : null}
+          </div>
+        </header>
       )}
-      {route && isProtected(route) && signedIn ? (
-        <AccountNav path={path} onNavigate={navigate} />
-      ) : null}
       <div
         key={
           route && (isProtected(route) || route.id === 'newPassword' || route.id === 'recover')

@@ -37,6 +37,23 @@ export async function login(page: Page, email = 'a@example.invalid') {
   await page.getByLabel('Correo', { exact: true }).fill(email);
   await page.getByLabel('Contraseña', { exact: true }).fill('fake-password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page).toHaveURL('/cuenta');
-  await expect(page.getByLabel('Nombre visible')).toBeVisible();
+  // Tras entrar se llega al panel de Inicio.
+  await expect(page).toHaveURL('/');
+  await expect(page.getByRole('heading', { level: 1, name: /^Hola, / })).toBeVisible();
+}
+
+// Enlace de la barra principal. En pantallas estrechas está tras el botón de menú.
+export async function clickNav(page: Page, name: string) {
+  const toggle = page.getByRole('button', { name: 'Abrir menú' });
+  if (await toggle.isVisible()) await toggle.click();
+  await page
+    .getByRole('navigation', { name: 'Principal' })
+    .getByRole('link', { name, exact: true })
+    .click();
+}
+
+// Mi perfil, Preferencias y Consentimientos están dentro del menú «Mi cuenta».
+export async function openAccountPage(page: Page, label: string) {
+  await page.getByRole('button', { name: 'Mi cuenta' }).click();
+  await page.getByRole('link', { name: label, exact: true }).click();
 }

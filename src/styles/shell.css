@@ -1,17 +1,18 @@
-/* Barra superior del portal. Sin sesión: Inicio, Registro y Acceso destacado.
-   Con sesión: Inicio, Cuenta y el botón Salir. */
+/* Barra superior única. Sin sesión: Inicio, Registro y Acceso destacado.
+   Con sesión: Inicio, Descarga y Equipos; a la derecha, estado de sesión, «Mi cuenta» y Salir.
+   Por debajo de 62rem los enlaces se pliegan tras el botón de menú. */
 
 .top {
-  background: var(--surface);
+  background: var(--header-bg);
   border-bottom: 1px solid var(--line);
   box-shadow: var(--shadow-1);
+  backdrop-filter: saturate(1.4) blur(10px);
 }
 
 .top-inner {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3) var(--space-4);
+  gap: var(--space-3) var(--space-5);
   width: min(var(--wrap-wide), calc(100% - 2rem));
   margin: 0 auto;
   padding: var(--space-3) 0;
@@ -21,12 +22,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-right: auto;
   color: var(--text);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.0625rem;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 .brand svg {
   width: 2rem;
@@ -34,14 +35,40 @@
   flex: none;
 }
 .brand-accent {
-  color: var(--link);
+  color: var(--accent);
 }
 
 .shield-outer {
-  fill: var(--link);
+  fill: var(--primary);
 }
 .shield-inner {
-  fill: var(--accent);
+  fill: var(--tone-accent-fill);
+  opacity: 0.55;
+}
+
+.menu-toggle {
+  display: none;
+  margin-left: auto;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding: var(--space-2);
+  width: var(--control);
+}
+.menu-toggle:hover:not(:disabled) {
+  background: var(--tone-accent-bg);
+}
+.menu-toggle .icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.nav-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
 .nav {
@@ -49,48 +76,124 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
+  margin-left: auto;
 }
 .nav a,
-.subnav a {
+.account-panel a {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-2);
   min-height: var(--control);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius);
+  color: var(--muted);
   text-decoration: none;
   font-weight: 600;
 }
-.nav a:hover {
-  background: var(--info-bg);
+.nav a:hover,
+.account-panel a:hover {
+  background: var(--tone-accent-bg);
+  color: var(--text);
 }
 .nav a[aria-current='page'],
-.subnav a[aria-current='page'] {
-  background: var(--info-bg);
+.account-panel a[aria-current='page'] {
+  background: var(--tone-accent-bg);
+  color: var(--text);
   font-weight: 700;
-  box-shadow: inset 0 -3px 0 var(--link);
+  box-shadow: inset 0 -3px 0 var(--accent);
 }
 
 /* Acceso es la acción principal para quien no ha entrado. */
 .nav a.nav-cta {
-  background: var(--link);
-  color: var(--on-link);
+  background: var(--primary);
+  color: var(--on-primary);
   padding-inline: var(--space-4);
 }
 .nav a.nav-cta:hover {
-  background: var(--link-strong);
+  background: var(--primary-hover);
+  color: var(--on-primary);
 }
 .nav a.nav-cta[aria-current='page'] {
-  box-shadow: inset 0 -3px 0 var(--accent);
+  box-shadow: inset 0 -3px 0 var(--on-primary);
+}
+
+.session-area {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.session-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background: var(--tone-ok-bg);
+  color: var(--tone-ok-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.account-menu {
+  position: relative;
+}
+.account-toggle {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding-inline: var(--space-3);
+}
+.account-toggle:hover:not(:disabled),
+.account-toggle[aria-expanded='true'] {
+  background: var(--tone-accent-bg);
+}
+.account-toggle.active {
+  border-color: var(--accent);
+}
+.account-toggle .chevron {
+  transition: transform 0.15s ease;
+}
+.account-toggle[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+.account-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-2));
+  z-index: 4;
+  min-width: 14rem;
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+}
+.account-panel[hidden] {
+  display: none;
+}
+.account-panel a {
+  display: flex;
+  width: 100%;
 }
 
 .nav-exit {
   background: transparent;
   color: var(--link);
   border: 1px solid var(--link);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
 }
-.nav-exit:hover {
-  background: var(--info-bg);
+.nav-exit:hover:not(:disabled) {
+  background: var(--tone-accent-bg);
 }
 
 /* Fija la barra solo en pantallas grandes: con zoom alto o en el móvil no tapa el contenido. */
@@ -98,18 +201,102 @@
   .top {
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 3;
   }
   html {
     scroll-padding-top: 5rem;
   }
 }
 
-@media (max-width: 40rem) {
+@media (max-width: 61.99rem) {
   .top-inner {
-    width: calc(100% - 2rem);
+    flex-wrap: wrap;
   }
-  .brand {
+  .menu-toggle {
+    display: inline-flex;
+  }
+  .nav-area {
+    display: none;
     flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-2) 0 var(--space-3);
+    border-top: 1px solid var(--line);
   }
+  .nav-area.open {
+    display: flex;
+  }
+  .nav {
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+  }
+  .nav a {
+    width: 100%;
+  }
+  .session-area {
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+  .session-chip {
+    align-self: flex-start;
+  }
+  .account-toggle,
+  .nav-exit {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .account-toggle .chevron {
+    margin-left: auto;
+  }
+  .account-panel {
+    position: static;
+    margin-top: var(--space-2);
+    box-shadow: none;
+  }
+}
+
+/* Pie de página: compacto, siempre al final (shell en columna y main con flex). */
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.footer-inner {
+  width: min(var(--wrap-wide), calc(100% - 2rem));
+  margin: 0 auto;
+  padding: var(--space-5) 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+}
+.footer-brand {
+  display: flex;
+  gap: var(--space-3);
+  max-width: 34rem;
+}
+.footer-brand svg {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+}
+.footer-brand p,
+.footer-meta p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.footer-brand .footer-title {
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1rem;
+}
+.footer-meta {
+  display: grid;
+  gap: var(--space-1);
+  align-content: center;
 }

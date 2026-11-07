@@ -1,4 +1,4 @@
-import { test, expect, login } from '../e2e/support';
+import { test, expect, login, openAccountPage, clickNav } from '../e2e/support';
 import path from 'node:path';
 test('build real con CSP A7: rutas directas, Auth/API por fetch, sin violaciones ni fixtures', async ({
   page,
@@ -37,13 +37,14 @@ test('build real con CSP A7: rutas directas, Auth/API por fetch, sin violaciones
     await expect(page.locator('h1')).toBeVisible();
   }
   await login(page);
+  await openAccountPage(page, 'Mi perfil');
   await expect(page.getByLabel('Nombre visible')).toHaveValue('Cuenta de ejemplo');
   if (evidence)
     await page.screenshot({
       path: path.join(evidence, '01-cuenta-escritorio.png'),
       fullPage: true,
     });
-  await page.getByRole('link', { name: 'Consentimientos', exact: true }).click();
+  await openAccountPage(page, 'Consentimientos');
   await expect(page.getByRole('group')).toHaveCount(2);
   for (const width of [360, 640, 1280]) {
     await page.setViewportSize({ width, height: 800 });
@@ -60,7 +61,8 @@ test('build real con CSP A7: rutas directas, Auth/API por fetch, sin violaciones
       fullPage: true,
     });
   }
-  await page.getByRole('link', { name: 'Descarga', exact: true }).click();
+  // Con evidencia la ventana queda en 360 px: clickNav abre el menú si está plegado.
+  await clickNav(page, 'Descarga');
   await expect(page.getByText('Instalador pendiente.', { exact: true })).toBeVisible();
   await expect(page.locator('a[href*="github.com"]')).toHaveCount(0);
   if (evidence)
@@ -69,7 +71,7 @@ test('build real con CSP A7: rutas directas, Auth/API por fetch, sin violaciones
       fullPage: true,
     });
   mock.emptyDevices();
-  await page.getByRole('link', { name: 'Equipos', exact: true }).click();
+  await clickNav(page, 'Equipos');
   await expect(page.getByText('Todavía no hay equipos vinculados.')).toBeVisible();
   await page.reload();
   await expect(page).toHaveURL('/acceso');

@@ -53,7 +53,7 @@ export const routes = [
     id: 'account',
     path: '/cuenta',
     title: 'Tu cuenta',
-    nav: 'Cuenta',
+    nav: null,
     access: 'protected',
     guestOnly: false,
   },
@@ -77,7 +77,7 @@ export const routes = [
     id: 'download',
     path: '/cuenta/descarga',
     title: 'Descarga',
-    nav: null,
+    nav: 'Descarga',
     access: 'protected',
     guestOnly: false,
   },
@@ -85,7 +85,7 @@ export const routes = [
     id: 'devices',
     path: '/cuenta/equipos',
     title: 'Equipos',
-    nav: null,
+    nav: 'Equipos',
     access: 'protected',
     guestOnly: false,
   },
@@ -112,11 +112,24 @@ export function isGuestOnly(route: Route | undefined): boolean {
 }
 
 // Enlaces de la barra principal. Sin sesión: Inicio, Registro y Acceso (el último, destacado).
-// Con sesión: Inicio y Cuenta; nunca Acceso ni Registro. Recorre las 11 rutas: O(n).
+// Con sesión: Inicio, Descarga y Equipos; nunca Acceso ni Registro. El perfil, las
+// preferencias y los consentimientos van en el menú «Mi cuenta». Recorre las 11 rutas: O(n).
 export function navItems(signedIn: boolean): Route[] {
   return routes.filter((route) => {
     if (route.nav === null) return false;
     if (signedIn) return !route.guestOnly;
     return route.access === 'public';
   });
+}
+
+// Menú «Mi cuenta» (solo con sesión). Tres rutas protegidas que antes eran un segundo menú
+// de pestañas bajo la barra.
+export const accountMenu = [
+  { path: '/cuenta', label: 'Mi perfil' },
+  { path: '/cuenta/preferencias', label: 'Preferencias' },
+  { path: '/cuenta/consentimientos', label: 'Consentimientos' },
+] as const;
+
+export function inAccountMenu(path: string): boolean {
+  return accountMenu.some((item) => item.path === path);
 }

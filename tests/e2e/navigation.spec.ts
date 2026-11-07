@@ -63,7 +63,20 @@ test('cabe en 360 px en los recorridos públicos, el error y el diálogo', async
   expect(await fits(page)).toBe(true);
   await page.goto('/tests/harness/index.html');
   await page.getByRole('button', { name: 'Ver cuenta de ejemplo' }).click();
+  // En 360 px los enlaces están plegados tras el botón de menú.
+  const toggle = page.getByRole('button', { name: 'Abrir menú' });
+  await expect(page.getByRole('link', { name: 'Equipos' })).toBeHidden();
+  await toggle.click();
+  await expect(page.getByRole('button', { name: 'Cerrar menú' })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  expect(await fits(page)).toBe(true);
   await page.getByRole('link', { name: 'Equipos' }).click();
+  await expect(page.getByRole('button', { name: 'Abrir menú' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
   await page.getByRole('button', { name: 'Revocar equipo' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   expect(await fits(page)).toBe(true);
@@ -83,21 +96,49 @@ test('con sesión la barra no ofrece Acceso ni Registro y Salir cierra la sesió
 }) => {
   await login(page);
   const nav = page.getByRole('navigation', { name: 'Principal' });
-  await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Cuenta']);
-  await nav.getByRole('link', { name: 'Inicio' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'CyberSOC Defender' })).toBeVisible();
+  // Una sola barra: sin el segundo menú de pestañas bajo el título.
+  await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Descarga', 'Equipos']);
+  await expect(page.getByRole('navigation', { name: 'Cuenta' })).toHaveCount(0);
+  await expect(nav.getByRole('link', { name: 'Inicio' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('link', { name: 'Ir a la descarga' })).toHaveAttribute(
     'href',
     '/cuenta/descarga',
   );
   await expect(page.getByRole('link', { name: 'Entrar' })).toHaveCount(0);
+  // «Mi cuenta» se abre, se cierra con Escape devolviendo el foco y lleva a sus páginas.
+  const account = page.getByRole('button', { name: 'Mi cuenta' });
+  await account.click();
+  await expect(account).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(account).toHaveAttribute('aria-expanded', 'false');
+  await expect(account).toBeFocused();
+  await account.click();
+  await page.getByRole('link', { name: 'Preferencias', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Preferencias' })).toBeVisible();
+  await expect(account).toHaveAttribute('aria-expanded', 'false');
   await page.getByRole('button', { name: 'Salir' }).click();
   await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Registro', 'Acceso']);
   await expect(page.getByRole('button', { name: 'Salir' })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/acceso');
+  await expect(page.getByRole('button', { name: 'Mi cuenta' })).toHaveCount(0);
 });
 
-test('con sesión, Registro y Acceso del historial llevan a la cuenta', async ({ page }) => {
+test('el tema oscuro guardado en la cuenta se aplica y Salir vuelve al del sistema', async ({
+  page,
+}) => {
+  await login(page);
+  await page.getByRole('button', { name: 'Mi cuenta' }).click();
+  await page.getByRole('link', { name: 'Preferencias', exact: true }).click();
+  await page.getByLabel('Tema', { exact: true }).selectOption('dark');
+  await page.getByRole('button', { name: 'Guardar preferencias' }).click();
+  await expect(page.getByText('Preferencias guardadas.')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(background).toBe('rgb(11, 18, 32)');
+  await page.getByRole('button', { name: 'Salir' }).click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
+});
+
+test('con sesión, Registro y Acceso del historial llevan al panel', async ({ page }) => {
   await page.goto('/registro');
   await page
     .getByRole('navigation', { name: 'Principal' })
@@ -106,11 +147,11 @@ test('con sesión, Registro y Acceso del historial llevan a la cuenta', async ({
   await page.getByLabel('Correo', { exact: true }).fill('a@example.invalid');
   await page.getByLabel('Contraseña', { exact: true }).fill('fake-password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page).toHaveURL('/cuenta');
+  await expect(page).toHaveURL('/');
   // Al entrar, Acceso se reemplaza en el historial: atrás ya no muestra el formulario.
   await page.goBack();
-  await expect(page).toHaveURL('/cuenta');
-  await expect(page.getByRole('heading', { level: 1, name: 'Tu cuenta' })).toBeVisible();
+  await expect(page).toHaveURL('/');
+  await expect(page.getByRole('heading', { level: 1, name: /^Hola, / })).toBeVisible();
   await expect(page.getByText('Registro cerrado. La demo no acepta cuentas nuevas.')).toHaveCount(
     0,
   );

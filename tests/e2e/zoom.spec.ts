@@ -156,6 +156,9 @@ async function showRecoveryError(page: Page) {
 async function openExampleDialog(page: Page) {
   await page.goto('/tests/harness/index.html');
   await page.getByRole('button', { name: 'Ver cuenta de ejemplo' }).click();
+  // Por debajo de 62rem de ancho CSS los enlaces están tras el botón de menú.
+  const toggle = page.getByRole('button', { name: 'Abrir menú' });
+  if (await toggle.isVisible()) await toggle.click();
   await page.getByRole('link', { name: 'Equipos' }).click();
   await page.getByRole('button', { name: 'Revocar equipo' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();

@@ -1,4 +1,4 @@
-import { expect, test, login } from './support';
+import { expect, test, login, openAccountPage } from './support';
 test('acceso valida/focaliza, muestra clave y bloquea doble envío sin mensaje upstream', async ({
   page,
   mock,
@@ -58,10 +58,11 @@ test('perfil inexistente abre creación y preferencias se guardan por API', asyn
   await page.getByLabel('Contraseña', { exact: true }).fill('fake-password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await expect(page.getByText('Crea tu perfil para continuar.')).toBeVisible();
+  await page.getByRole('link', { name: 'Crear mi perfil' }).click();
   await page.getByLabel('Nombre visible').fill('Perfil local');
   await page.getByRole('button', { name: 'Crear perfil' }).click();
   await expect(page.getByRole('button', { name: 'Guardar nombre' })).toBeVisible();
-  await page.getByRole('link', { name: 'Preferencias', exact: true }).click();
+  await openAccountPage(page, 'Preferencias');
   await expect(page.getByLabel('Zona horaria')).toHaveValue('America/Bogota');
   await page.getByLabel('Tema', { exact: true }).selectOption('dark');
   await page.getByRole('button', { name: 'Guardar preferencias' }).click();
@@ -77,7 +78,7 @@ test('consentimiento exige decisión explícita y retirada no lleva versión', a
   mock,
 }) => {
   await login(page);
-  await page.getByRole('link', { name: 'Consentimientos', exact: true }).click();
+  await openAccountPage(page, 'Consentimientos');
   const section = page.getByRole('group', { name: 'Resúmenes de análisis' });
   await expect(section.getByRole('button', { name: 'Conceder' })).toBeDisabled();
   await section.getByRole('checkbox').check();
@@ -122,12 +123,15 @@ test('solo POST válido muestra URL; no se visita ni descarga fixture', async ({
 test('logout sin red limpia y otra cuenta no conserva datos de A', async ({ page, mock }) => {
   await login(page);
   await page.route('**/auth/v1/logout?scope=*', (route) => route.abort());
+  await openAccountPage(page, 'Mi perfil');
   await page.getByRole('button', { name: 'Cerrar en todos los dispositivos' }).click();
   await expect(page).toHaveURL('/acceso');
   await expect(page.getByText('cierre remoto no confirmado')).toBeVisible();
   await page.getByLabel('Correo').fill('b@example.invalid');
   await page.getByLabel('Contraseña', { exact: true }).fill('fake-password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Hola, Cuenta B local' })).toBeVisible();
+  await openAccountPage(page, 'Mi perfil');
   await expect(page.getByLabel('Nombre visible')).toHaveValue('Cuenta B local');
   expect(mock.requests.filter((item) => item.path.includes('password'))).toHaveLength(2);
   await expect(page.locator('body')).not.toContainText('Cuenta de ejemplo');
@@ -157,7 +161,7 @@ test('recuperación neutral y 429 obliga a esperar sin reenvío automático', as
 });
 test('timeout simulado de mutación no repite ni afirma guardado', async ({ page, mock }) => {
   await login(page);
-  await page.getByRole('link', { name: 'Preferencias', exact: true }).click();
+  await openAccountPage(page, 'Preferencias');
   await page.route('**/v1/me/preferences', (route) => route.abort());
   await page.getByRole('button', { name: 'Guardar preferencias' }).click();
   await expect(

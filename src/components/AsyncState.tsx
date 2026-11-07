@@ -20,7 +20,16 @@ function RetryRead({ error, reload }: { error: PortalError; reload: () => void }
 }
 export function ResourceStatus<T>({ state, reload }: { state: Resource<T>; reload: () => void }) {
   if (state.status === 'loading')
-    return <StatusMessage kind="loading">Cargando. Espera un momento.</StatusMessage>;
+    return (
+      <div className="stack">
+        <StatusMessage kind="loading">Cargando. Espera un momento.</StatusMessage>
+        <div className="skeleton" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+    );
   if (state.status === 'error')
     return (
       <div className="stack">

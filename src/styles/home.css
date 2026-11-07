@@ -189,7 +189,7 @@
   border-radius: var(--radius);
   background: var(--info-bg);
   fill: none;
-  stroke: var(--link);
+  stroke: var(--accent);
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -207,7 +207,7 @@
   padding-top: var(--space-6);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-top: 4px solid var(--link);
+  border-top: 4px solid var(--accent);
   border-radius: var(--radius-lg);
 }
 .step::before {
@@ -217,8 +217,8 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 50%;
-  background: var(--link);
-  color: var(--on-link);
+  background: var(--primary);
+  color: var(--on-primary);
   font-weight: 700;
 }
 
@@ -226,7 +226,7 @@
   padding: var(--space-5);
   border-radius: var(--radius-lg);
   background: var(--info-bg);
-  border-left: 6px solid var(--link);
+  border-left: 6px solid var(--accent);
 }
 .privacy p {
   margin: 0;
