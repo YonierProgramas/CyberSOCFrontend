@@ -3,7 +3,7 @@ import { useAction, usePortal, useResource } from '../app/portal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ActionStatus, ResourceStatus } from '../components/AsyncState';
 import { Icon } from '../components/Icon';
-import { Badge, DemoBadge, EmptyState, formatDate } from '../components/ui';
+import { Badge, EmptyState, formatDate } from '../components/ui';
 
 export function DevicesPage() {
   const { api } = usePortal();
@@ -34,14 +34,20 @@ export function DevicesPage() {
                 Cuando la aplicación de escritorio pueda vincularse, verás aquí el nombre de cada
                 equipo, su versión y su última conexión, y podrás revocar su acceso.
               </p>
-              <div className="device-card preview" aria-label="Vista previa de demostración">
-                <div className="device-top">
+              <ul className="empty-points">
+                <li>
                   <Icon name="devices" />
-                  <DemoBadge />
-                </div>
-                <p className="device-name">PORTATIL-DEMO</p>
-                <p className="muted">Windows x64 · CyberSOC 0.11.0 · Activo</p>
-              </div>
+                  Nombre y versión de cada equipo
+                </li>
+                <li>
+                  <Icon name="clock" />
+                  Fecha de vinculación y última conexión
+                </li>
+                <li>
+                  <Icon name="lock" />
+                  Revocar el acceso cuando quieras
+                </li>
+              </ul>
             </EmptyState>
           ) : (
             <div className="device-grid">

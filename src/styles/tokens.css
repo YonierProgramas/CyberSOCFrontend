@@ -342,7 +342,12 @@ input[aria-invalid='true'] {
   /* Al enfocar con zoom, el navegador deja sitio para el mensaje de error de debajo. */
   scroll-margin-bottom: 4rem;
 }
+/* El contenido recibe el foco al usar «Saltar al contenido». El recuadro se dibuja solo con
+   teclado: con un clic en cualquier parte de la página no debe aparecer. */
 main#contenido:focus {
+  outline: none;
+}
+main#contenido:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 4px;
 }

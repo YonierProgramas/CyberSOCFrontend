@@ -1,6 +1,18 @@
 import { expect, login, test } from './support';
 import type { Page } from 'playwright/test';
 
+// Barra sin sesión: Inicio, las cinco páginas informativas, Registro y Acceso.
+const guestNav = [
+  'Inicio',
+  'Cómo funciona',
+  'Tecnología',
+  'Estructuras',
+  'Aplicación',
+  'Preguntas',
+  'Registro',
+  'Acceso',
+];
+
 function watch(page: Page): string[] {
   const hits: string[] = [];
   page.on('request', (request) => {
@@ -13,7 +25,18 @@ function watch(page: Page): string[] {
 
 test('recorre las pantallas públicas sin salir del equipo', async ({ page }) => {
   const hits = watch(page);
-  for (const path of ['/', '/acceso', '/registro', '/recuperar', '/nueva-contrasena']) {
+  for (const path of [
+    '/',
+    '/como-funciona',
+    '/tecnologia',
+    '/estructuras',
+    '/aplicacion',
+    '/preguntas',
+    '/acceso',
+    '/registro',
+    '/recuperar',
+    '/nueva-contrasena',
+  ]) {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   }
@@ -26,7 +49,10 @@ test('recorre las pantallas públicas sin salir del equipo', async ({ page }) =>
 
 test('marca la página actual y vuelve atrás', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Acceso' }).click();
+  await page
+    .getByRole('navigation', { name: 'Principal' })
+    .getByRole('link', { name: 'Acceso' })
+    .click();
   await expect(
     page.getByRole('navigation', { name: 'Principal' }).getByRole('link', { name: 'Acceso' }),
   ).toHaveAttribute('aria-current', 'page');
@@ -40,8 +66,13 @@ test('el salto de teclado lleva el foco al contenido', async ({ page }) => {
   await page.goto('/acceso');
   await expect(page.locator('main#contenido')).toHaveCount(1);
   await page.getByRole('heading', { name: 'Acceso' }).focus();
-  for (let step = 0; step < 5; step += 1) await page.keyboard.press('Shift+Tab');
-  await expect(page.getByRole('link', { name: 'Saltar al contenido' })).toBeFocused();
+  // Hacia atrás desde el título: la barra tiene ocho enlaces sin sesión.
+  const skip = page.getByRole('link', { name: 'Saltar al contenido' });
+  for (let step = 0; step < 12; step += 1) {
+    if (await skip.evaluate((node) => node === document.activeElement)) break;
+    await page.keyboard.press('Shift+Tab');
+  }
+  await expect(skip).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('main#contenido')).toBeFocused();
   await expect(page.locator('header :focus')).toHaveCount(0);
@@ -65,14 +96,15 @@ test('cabe en 360 px en los recorridos públicos, el error y el diálogo', async
   await page.getByRole('button', { name: 'Ver cuenta de ejemplo' }).click();
   // En 360 px los enlaces están plegados tras el botón de menú.
   const toggle = page.getByRole('button', { name: 'Abrir menú' });
-  await expect(page.getByRole('link', { name: 'Equipos' })).toBeHidden();
+  const nav = page.getByRole('navigation', { name: 'Principal' });
+  await expect(nav.getByRole('link', { name: 'Equipos' })).toBeHidden();
   await toggle.click();
   await expect(page.getByRole('button', { name: 'Cerrar menú' })).toHaveAttribute(
     'aria-expanded',
     'true',
   );
   expect(await fits(page)).toBe(true);
-  await page.getByRole('link', { name: 'Equipos' }).click();
+  await nav.getByRole('link', { name: 'Equipos' }).click();
   await expect(page.getByRole('button', { name: 'Abrir menú' })).toHaveAttribute(
     'aria-expanded',
     'false',
@@ -117,7 +149,7 @@ test('con sesión la barra no ofrece Acceso ni Registro y Salir cierra la sesió
   await expect(page.getByRole('heading', { level: 1, name: 'Preferencias' })).toBeVisible();
   await expect(account).toHaveAttribute('aria-expanded', 'false');
   await page.getByRole('button', { name: 'Salir' }).click();
-  await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Registro', 'Acceso']);
+  await expect(nav.getByRole('link')).toHaveText(guestNav);
   await expect(page.getByRole('button', { name: 'Salir' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Mi cuenta' })).toHaveCount(0);
 });
@@ -165,27 +197,130 @@ test('la portada informa y cabe en 360 px sin recuadro en el título', async ({ 
   await expect(title).toBeFocused();
   expect(await title.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe('none');
   await expect(page.getByRole('heading', { level: 2 })).toHaveText([
-    'Qué hace la aplicación',
-    'Cómo se analiza un archivo',
-    'La aplicación de escritorio',
-    'Cómo empezar',
-    'El portal no ve tus archivos',
+    'Qué ofrece el antivirus',
+    'Conoce cada parte a fondo',
+    'Principios de funcionamiento',
+    'Instálalo en Windows',
   ]);
   await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute(
     'href',
     '/acceso',
   );
-  await expect(page.getByRole('link', { name: 'Cómo obtener una cuenta' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Conoce la tecnología' })).toHaveAttribute(
     'href',
-    '/registro',
+    '/tecnologia',
   );
-  // Nada privado ni funciones pendientes anunciadas como disponibles antes de entrar.
+  // Ya no hay menú de anclas dentro de la portada: las secciones son páginas de la barra.
+  await expect(page.getByRole('navigation', { name: 'Secciones de la portada' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Entrar para descargar' })).toHaveAttribute(
+    'href',
+    '/acceso',
+  );
+  // Nada privado, ningún aviso de demostración y ninguna descarga directa antes de entrar.
   await expect(page.getByText('Sesión activa')).toHaveCount(0);
-  await expect(page.getByText('Instalador en preparación')).toBeVisible();
-  await expect(page.locator('body')).not.toContainText(/tiempo real|100 ?% protegido/i);
+  await expect(page.locator('body')).not.toContainText(
+    /tiempo real|100 ?% protegido|Datos de demostración|demo cerrada/i,
+  );
+  await expect(page.locator('a[href*="github.com"], a[download]')).toHaveCount(0);
   expect(await fits(page)).toBe(true);
   await page.setViewportSize({ width: 1280, height: 800 });
   expect(await fits(page)).toBe(true);
+});
+
+test('páginas informativas: barra, título, flujo, estructuras, capturas y preguntas', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'Principal' });
+  await expect(nav.getByRole('link')).toHaveText(guestNav);
+  // Un clic en cualquier parte del contenido no dibuja el recuadro de foco alrededor de todo.
+  await page
+    .locator('.home-section')
+    .first()
+    .click({ position: { x: 5, y: 5 } });
+  expect(await page.locator('main').evaluate((node) => getComputedStyle(node).outlineStyle)).toBe(
+    'none',
+  );
+
+  const pages: [string, string, string][] = [
+    ['Cómo funciona', '/como-funciona', 'Del archivo al resultado, paso a paso'],
+    ['Tecnología', '/tecnologia', 'Más que una interfaz'],
+    ['Estructuras', '/estructuras', 'Estructuras de datos en acción'],
+    ['Aplicación', '/aplicacion', 'La aplicación para Windows'],
+    ['Preguntas', '/preguntas', 'Lo que suelen preguntar'],
+  ];
+  for (const [label, path, title] of pages) {
+    await nav.getByRole('link', { name: label, exact: true }).click();
+    await expect(page).toHaveURL(path);
+    await expect(page.getByRole('heading', { level: 1, name: title })).toBeFocused();
+    await expect(nav.getByRole('link', { name: label, exact: true })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(await fits(page)).toBe(true);
+  }
+
+  // Desde el pie, al final de una página larga, la siguiente empieza arriba.
+  const footer = page.getByRole('navigation', { name: 'Conoce el proyecto' });
+  await footer.scrollIntoViewIfNeeded();
+  await footer.getByRole('link', { name: 'Cómo funciona' }).click();
+  await expect(page).toHaveURL('/como-funciona');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(200);
+
+  // Flujo del análisis: una sola etapa actual y su detalle cambia al elegir otra.
+  const steps = page.locator('.flow-steps button');
+  await expect(steps).toHaveCount(6);
+  await expect(page.locator('.flow-steps [aria-current="step"]')).toHaveCount(1);
+  await steps.nth(5).click();
+  await expect(steps.nth(5)).toHaveAttribute('aria-current', 'step');
+  await expect(page.getByRole('region', { name: 'Etapa 6: Cuarentena' })).toContainText(
+    'confirmación',
+  );
+  await expect(page.getByRole('button', { name: 'Etapa siguiente' })).toBeDisabled();
+
+  // Cola FIFO: sale el primero que entró. Pila LIFO: sale el último que entró.
+  await nav.getByRole('link', { name: 'Estructuras', exact: true }).click();
+  await page.getByRole('button', { name: 'Desencolar' }).click();
+  await expect(page.getByText('doc.pdf sale hacia el motor')).toBeVisible();
+  await page.getByRole('button', { name: 'Apilar (push)' }).click();
+  await page.getByRole('button', { name: 'Desapilar (pop)' }).click();
+  await expect(page.getByText(/se explora Descargas.fotos, la última en entrar/)).toBeVisible();
+  await page.getByRole('button', { name: 'vacaciones.jpg' }).click();
+  await expect(page.getByText('no está en el diccionario')).toBeVisible();
+  await expect(page.locator('.structure-table li')).toHaveCount(13);
+
+  // Capturas reales de la aplicación: cambian con su botón y cargan.
+  await nav.getByRole('link', { name: 'Aplicación', exact: true }).click();
+  await page.getByRole('button', { name: 'Escaneo', exact: true }).click();
+  const shot = page.locator('.showcase-frame img');
+  await expect(shot).toHaveAttribute('src', '/capturas/escritorio-escaneo.webp');
+  await expect.poll(() => shot.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(886);
+
+  // Preguntas en acordeón nativo, agrupadas por temas.
+  await nav.getByRole('link', { name: 'Preguntas', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 2 })).toHaveText([
+    'General',
+    'Análisis',
+    'Cuarentena',
+    'IA y privacidad',
+    'Cuenta e instalación',
+  ]);
+  const faq = page.locator('.faq details').first();
+  await faq.locator('summary').click();
+  await expect(faq).toHaveAttribute('open', '');
+});
+
+test('con sesión las páginas informativas siguen disponibles desde el pie', async ({ page }) => {
+  await login(page);
+  const nav = page.getByRole('navigation', { name: 'Principal' });
+  await expect(nav.getByRole('link')).toHaveText(['Inicio', 'Descarga', 'Equipos']);
+  await page
+    .getByRole('navigation', { name: 'Conoce el proyecto' })
+    .getByRole('link', { name: 'Tecnología' })
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Más que una interfaz' })).toBeFocused();
+  await expect(page.getByText('Sesión activa')).toBeVisible();
 });
 
 test('acceso: tarjeta y panel de marca, foco en el título y sin datos privados', async ({

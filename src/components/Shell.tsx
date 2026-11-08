@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type MouseEvent, type ReactNode } from 'react';
-import { accountMenu, inAccountMenu, navItems } from '../app/navigation';
+import { accountMenu, inAccountMenu, infoPages, navItems } from '../app/navigation';
 import { Icon, type IconName } from './Icon';
 import { trackVisualViewport } from './revealFocus';
 
@@ -12,9 +12,9 @@ type ShellProps = {
   onSignOut: () => void;
 };
 
-const navIcons: Record<string, IconName> = {
-  home: 'home',
-  register: 'user',
+// Iconos de la barra: con siete u ocho enlaces, los textos solos se leen mejor. Se mantienen en
+// los enlaces de cuenta y en Acceso, la acción destacada.
+const navIcons: Partial<Record<string, IconName>> = {
   access: 'logout',
   download: 'download',
   devices: 'devices',
@@ -109,7 +109,42 @@ function AccountMenu({ path, onNavigate }: { path: string; onNavigate: (path: st
   );
 }
 
-function Footer() {
+// Pie en cuatro columnas. Los enlaces usan rutas internas (sin recargar: la sesión vive solo en
+// esta pestaña). Las páginas informativas están aquí también con sesión. No hay enlaces externos
+// ni datos de contacto.
+function FooterLink({
+  href,
+  label,
+  path,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  path: string;
+  onNavigate: (path: string) => void;
+}) {
+  return (
+    <li>
+      <a
+        href={href}
+        aria-current={path === href ? 'page' : undefined}
+        onClick={(event) => go(event, href, onNavigate)}
+      >
+        {label}
+      </a>
+    </li>
+  );
+}
+
+function Footer({
+  path,
+  signedIn,
+  onNavigate,
+}: {
+  path: string;
+  signedIn: boolean;
+  onNavigate: (path: string) => void;
+}) {
   return (
     <footer className="site-footer">
       <div className="footer-inner">
@@ -121,12 +156,54 @@ function Footer() {
               Antivirus de escritorio para Windows con análisis local, cuarentena reversible y un
               asistente que explica cada resultado.
             </p>
+            <ul className="footer-tags" aria-label="Tecnologías">
+              {['Python', 'TypeScript', 'Electron', 'React', 'SQLite', 'Supabase'].map((name) => (
+                <li key={name}>{name}</li>
+              ))}
+            </ul>
           </div>
         </div>
-        <div className="footer-meta">
-          <p>Proyecto académico de ciberseguridad · Estructuras de Datos</p>
-          <p>Universidad Cooperativa de Colombia · 2026</p>
+        <nav className="footer-col" aria-label="Pie de página">
+          <p className="footer-heading">Navegación</p>
+          <ul>
+            {navItems(signedIn)
+              .filter((route) => !route.info)
+              .map((route) => (
+                <FooterLink
+                  key={route.id}
+                  href={route.path}
+                  label={route.nav ?? route.title}
+                  path={path}
+                  onNavigate={onNavigate}
+                />
+              ))}
+          </ul>
+        </nav>
+        <nav className="footer-col" aria-label="Conoce el proyecto">
+          <p className="footer-heading">Conoce el proyecto</p>
+          <ul>
+            {infoPages().map((route) => (
+              <FooterLink
+                key={route.id}
+                href={route.path}
+                label={route.title}
+                path={path}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </ul>
+        </nav>
+        <div className="footer-col">
+          <p className="footer-heading">Proyecto académico</p>
+          <ul>
+            <li>Estructuras de Datos</li>
+            <li>Universidad Cooperativa de Colombia</li>
+            <li>2026</li>
+          </ul>
         </div>
+      </div>
+      <div className="footer-bottom">
+        <p>© 2026 CyberSOC Defender · Análisis local para Windows</p>
       </div>
     </footer>
   );
@@ -172,7 +249,7 @@ export function Shell({ path, signedIn, wide, children, onNavigate, onSignOut }:
                   aria-current={path === route.path ? 'page' : undefined}
                   onClick={(event) => go(event, route.path, onNavigate)}
                 >
-                  <Icon name={navIcons[route.id] ?? 'home'} />
+                  {navIcons[route.id] ? <Icon name={navIcons[route.id]!} /> : null}
                   {route.nav}
                 </a>
               ))}
@@ -196,7 +273,7 @@ export function Shell({ path, signedIn, wide, children, onNavigate, onSignOut }:
       <main id="contenido" className={wide ? 'wrap wrap-wide' : 'wrap'} tabIndex={-1}>
         {children}
       </main>
-      <Footer />
+      <Footer path={path} signedIn={signedIn} onNavigate={onNavigate} />
     </div>
   );
 }

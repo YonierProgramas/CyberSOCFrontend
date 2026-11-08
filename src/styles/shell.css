@@ -1,6 +1,7 @@
 /* Barra superior única. Sin sesión: Inicio, Registro y Acceso destacado.
    Con sesión: Inicio, Descarga y Equipos; a la derecha, estado de sesión, «Mi cuenta» y Salir.
-   Por debajo de 62rem los enlaces se pliegan tras el botón de menú. */
+   Sin sesión, además, las cinco páginas informativas. Por debajo de 72rem los enlaces se
+   pliegan tras el botón de menú. */
 
 .top {
   background: var(--header-bg);
@@ -208,7 +209,7 @@
   }
 }
 
-@media (max-width: 61.99rem) {
+@media (max-width: 71.99rem) {
   .top-inner {
     flex-wrap: wrap;
   }
@@ -259,44 +260,110 @@
   }
 }
 
-/* Pie de página: compacto, siempre al final (shell en columna y main con flex). */
+/* Pie de página en cuatro columnas (una en el móvil, dos desde 40rem), siempre al final:
+   shell en columna y main con flex. */
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--line);
-  background: var(--surface);
+  background:
+    linear-gradient(90deg, transparent, var(--tone-accent-bg), transparent) top / 100% 1px no-repeat,
+    var(--surface);
 }
 .footer-inner {
   width: min(var(--wrap-wide), calc(100% - 2rem));
   margin: 0 auto;
-  padding: var(--space-5) 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-4) var(--space-6);
+  padding: var(--space-6) 0 var(--space-5);
+  display: grid;
+  gap: var(--space-5) var(--space-6);
 }
 .footer-brand {
   display: flex;
   gap: var(--space-3);
-  max-width: 34rem;
+  max-width: 26rem;
 }
 .footer-brand svg {
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   flex: none;
 }
 .footer-brand p,
-.footer-meta p {
+.footer-col li {
   margin: 0;
   color: var(--muted);
   font-size: 0.9rem;
 }
 .footer-brand .footer-title {
+  margin-bottom: var(--space-1);
   color: var(--text);
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 1.05rem;
 }
-.footer-meta {
+.footer-heading {
+  margin: 0 0 var(--space-3);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.footer-col ul {
   display: grid;
-  gap: var(--space-1);
-  align-content: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.footer-col a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+.footer-col a:hover,
+.footer-col a[aria-current='page'] {
+  color: var(--link);
+  text-decoration: underline;
+}
+.footer-tags {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.footer-brand .footer-tags,
+.footer-col .footer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.footer-brand .footer-tags li,
+.footer-tags li {
+  padding: 0.15rem var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.footer-bottom {
+  width: min(var(--wrap-wide), calc(100% - 2rem));
+  margin: 0 auto;
+  padding: var(--space-4) 0 var(--space-5);
+  border-top: 1px solid var(--line);
+}
+.footer-bottom p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+@media (min-width: 40rem) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 64rem) {
+  .footer-inner {
+    grid-template-columns: 1.6fr 0.8fr 1fr 1fr;
+  }
 }

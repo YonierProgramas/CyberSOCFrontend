@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { isGuestOnly, isProtected, routeByPath } from './navigation';
+import { isGuestOnly, isInfo, isProtected, routeByPath } from './navigation';
 import { readPublicConfig } from '../config/publicConfig';
 import { createPortalRuntime, type PortalRuntime } from './runtime';
 import { PortalProvider, useSession } from './portal';
@@ -15,6 +15,13 @@ import { ConsentsPage } from '../pages/ConsentsPage';
 import { DevicesPage } from '../pages/DevicesPage';
 import { DownloadPage } from '../pages/DownloadPage';
 import { HomePage } from '../pages/HomePage';
+import {
+  DesktopAppPage,
+  FaqPage,
+  HowItWorksPage,
+  StructuresPage,
+  TechnologyPage,
+} from '../pages/InfoPages';
 import { NewPasswordPage } from '../pages/NewPasswordPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PreferencesPage } from '../pages/PreferencesPage';
@@ -117,10 +124,14 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
     if (!routeByPath(clean) || clean === normalize(window.location.pathname)) return;
     window.history.pushState({}, '', clean);
     setPath(clean);
+    // Las páginas informativas son largas: cada página nueva empieza arriba, sin animación.
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
   // Mientras una redirección está pendiente no se pinta la página de error.
   let body: ReactNode = route ? null : <NotFoundPage onNavigate={navigate} />;
   const isHome = route?.id === 'home';
+  // Inicio y las páginas informativas dibujan su propia banda con el título (h1).
+  const ownHeader = isHome || isInfo(route);
   const meta = route && signedIn ? pageMeta[route.id] : undefined;
   const auth = route && !blocked && !alreadyIn ? authMeta[route.id] : undefined;
   if (route && !blocked && !alreadyIn) {
@@ -162,19 +173,34 @@ function Portal({ runtime, homeExtra }: { runtime: PortalRuntime; homeExtra: Rea
       case 'devices':
         body = <DevicesPage />;
         break;
+      case 'howItWorks':
+        body = <HowItWorksPage headingRef={setHeading} onNavigate={navigate} />;
+        break;
+      case 'technology':
+        body = <TechnologyPage headingRef={setHeading} onNavigate={navigate} />;
+        break;
+      case 'structures':
+        body = <StructuresPage headingRef={setHeading} onNavigate={navigate} />;
+        break;
+      case 'desktopApp':
+        body = <DesktopAppPage headingRef={setHeading} onNavigate={navigate} />;
+        break;
+      case 'faq':
+        body = <FaqPage headingRef={setHeading} onNavigate={navigate} />;
+        break;
     }
   }
   return (
     <Shell
       path={path}
       signedIn={signedIn}
-      wide={isHome || Boolean(auth) || Boolean(route && isProtected(route) && signedIn)}
+      wide={ownHeader || Boolean(auth) || Boolean(route && isProtected(route) && signedIn)}
       onNavigate={navigate}
       onSignOut={() => {
         void runtime.session.logout('local');
       }}
     >
-      {isHome || auth ? null : (
+      {ownHeader || auth ? null : (
         <header className={meta ? 'page-head' : 'page-head plain'}>
           {meta ? (
             <span className="page-icon">

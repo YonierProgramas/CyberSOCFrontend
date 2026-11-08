@@ -7,15 +7,6 @@ export function Badge({ tone, children }: { tone: Tone; children: ReactNode }) {
   return <span className={`badge tone-${tone}`}>{children}</span>;
 }
 
-// Marca obligatoria de todo dato ficticio: nunca se mezcla con datos reales.
-export function DemoBadge() {
-  return <Badge tone="warn">Datos de demostración</Badge>;
-}
-
-export function RealBadge() {
-  return <Badge tone="ok">Dato real</Badge>;
-}
-
 export function EmptyState({
   icon,
   title,

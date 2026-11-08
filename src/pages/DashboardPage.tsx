@@ -1,46 +1,26 @@
 import { useCallback, useEffect, type ReactNode, type Ref } from 'react';
 import { usePortal, useResource } from '../app/portal';
 import { applyTheme } from '../app/theme';
-import { BarChart, DonutChart, HBarChart, type Datum } from '../components/Charts';
 import { Icon, type IconName } from '../components/Icon';
 import { RouteLink } from '../components/Shell';
-import { Badge, DemoBadge, RealBadge } from '../components/ui';
+import { Badge } from '../components/ui';
 
-// Datos de demostración, solo para mostrar cómo se presentan los análisis. El portal no
-// recibe análisis: se hacen y se guardan en la app de escritorio (privacidad, ADR-010).
-// Las cifras son coherentes entre sí: 1 284 archivos, 7 detectados en 4 capas.
-const demoActivity: Datum[] = [
-  { label: 'Lun', value: 142 },
-  { label: 'Mar', value: 210 },
-  { label: 'Mié', value: 0 },
-  { label: 'Jue', value: 318 },
-  { label: 'Vie', value: 264 },
-  { label: 'Sáb', value: 96 },
-  { label: 'Dom', value: 254 },
+// El portal no recibe análisis: se hacen y se guardan en la app de escritorio (privacidad,
+// ADR-010). Por eso aquí no hay cifras de análisis: solo una explicación de cómo se presentan
+// en la aplicación, con una captura real de su pantalla Resumen y sin métricas inventadas.
+const verdicts: { tone: 'ok' | 'warn' | 'danger' | 'muted'; label: string; text: string }[] = [
+  { tone: 'ok', label: 'Sin hallazgos', text: 'Ninguna capa encontró indicios.' },
+  { tone: 'warn', label: 'Sospechoso', text: 'Hay señales que conviene revisar.' },
+  { tone: 'danger', label: 'Detectado', text: 'Las señales indican una amenaza.' },
+  { tone: 'muted', label: 'No analizado', text: 'El archivo no se pudo leer.' },
 ];
-const demoVerdicts: Datum[] = [
-  { label: 'Sin hallazgos', value: 1219, tone: 'ok' },
-  { label: 'Sospechoso', value: 41, tone: 'warn' },
-  { label: 'Detectado', value: 7, tone: 'danger' },
-  { label: 'Con error', value: 17, tone: 'muted' },
-];
-const demoLayers: Datum[] = [
-  { label: 'Hash', value: 3, tone: 'danger' },
-  { label: 'Firmas', value: 2, tone: 'danger' },
-  { label: 'Reglas', value: 1, tone: 'warn' },
-  { label: 'Heurística', value: 1, tone: 'warn' },
-];
-const demoKpis: { icon: IconName; label: string; value: string }[] = [
-  { icon: 'file', label: 'Archivos analizados', value: '1 284' },
-  { icon: 'bug', label: 'Amenazas detectadas', value: '7' },
-  { icon: 'vault', label: 'En cuarentena', value: '5' },
-  { icon: 'check', label: 'Escaneos finalizados', value: '42' },
-];
-const demoRecent = [
-  'Análisis de Descargas terminado: 128 archivos, 1 detectado.',
-  'Archivo factura.pdf.exe enviado a cuarentena.',
-  'Análisis de Escritorio terminado: 64 archivos, sin hallazgos.',
-  'El asistente explicó un resultado sospechoso.',
+const layers: { icon: IconName; label: string }[] = [
+  { icon: 'fingerprint', label: 'Hash y firmas' },
+  { icon: 'file', label: 'Tipo real' },
+  { icon: 'layers', label: 'Reglas' },
+  { icon: 'pulse', label: 'Heurística' },
+  { icon: 'window', label: 'Ejecutables' },
+  { icon: 'code', label: 'Scripts' },
 ];
 
 function Kpi({
@@ -168,7 +148,6 @@ export function DashboardPage({
       <section aria-labelledby="panel-cuenta">
         <div className="section-head">
           <h2 id="panel-cuenta">Tu cuenta hoy</h2>
-          <RealBadge />
         </div>
         <div className="kpi-grid">
           <Kpi
@@ -207,54 +186,52 @@ export function DashboardPage({
         </div>
       </section>
 
-      <section className="demo-zone" aria-labelledby="panel-demo">
+      <section className="app-preview" aria-labelledby="panel-app">
         <div className="section-head">
-          <h2 id="panel-demo">Así se ven tus análisis en la app</h2>
-          <DemoBadge />
+          <h2 id="panel-app">Tus análisis, en la aplicación de escritorio</h2>
         </div>
-        <p className="demo-note">
-          <Icon name="info" />
-          Cifras ficticias para mostrar la presentación. Tus análisis reales se guardan solo en la
-          aplicación de escritorio: el portal no los recibe ni los muestra.
+        <p className="muted app-preview-lead">
+          El análisis, el historial y sus gráficos viven en la aplicación, dentro de tu equipo. Así
+          se organizan:
         </p>
-        <div className="kpi-grid">
-          {demoKpis.map((kpi) => (
-            <Kpi key={kpi.label} icon={kpi.icon} label={kpi.label} value={kpi.value} note="Demo" />
-          ))}
-        </div>
-        <div className="chart-grid">
-          <article className="card chart-card wide">
-            <h3>Archivos analizados en los últimos 7 días</h3>
-            <BarChart
-              title="Archivos analizados por día (demo)"
-              data={demoActivity}
-              unit="Archivos"
-              wide
+        <div className="app-preview-grid">
+          <figure className="showcase-frame">
+            <img
+              src="/capturas/escritorio-resumen.webp"
+              alt="Pantalla Resumen de la aplicación de escritorio: análisis en curso, último análisis completado y actividad de siete días."
+              width={886}
+              height={500}
+              loading="lazy"
+              decoding="async"
             />
-          </article>
-          <article className="card chart-card">
-            <h3>Resultado de los análisis</h3>
-            <DonutChart
-              title="Resultados por veredicto (demo)"
-              data={demoVerdicts}
-              unit="Archivos"
-            />
-          </article>
-          <article className="card chart-card">
-            <h3>Detecciones por capa del motor</h3>
-            <HBarChart title="Detecciones por capa (demo)" data={demoLayers} unit="Detecciones" />
-          </article>
-          <article className="card chart-card">
-            <h3>Actividad reciente</h3>
-            <ul className="activity">
-              {demoRecent.map((item) => (
-                <li key={item}>
-                  <Icon name="clock" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </article>
+          </figure>
+          <div className="app-preview-copy">
+            <article className="card">
+              <h3>Resultados posibles</h3>
+              <ul className="verdict-scale">
+                {verdicts.map((verdict) => (
+                  <li key={verdict.label}>
+                    <Badge tone={verdict.tone}>{verdict.label}</Badge>
+                    <span>{verdict.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+            <article className="card">
+              <h3>Capas del motor</h3>
+              <ul className="layer-chips">
+                {layers.map((layer) => (
+                  <li key={layer.label}>
+                    <Icon name={layer.icon} />
+                    {layer.label}
+                  </li>
+                ))}
+              </ul>
+              <p className="muted layer-note">
+                La política de riesgo combina sus señales; la IA nunca decide el veredicto.
+              </p>
+            </article>
+          </div>
         </div>
       </section>
 

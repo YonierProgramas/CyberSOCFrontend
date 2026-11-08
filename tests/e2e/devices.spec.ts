@@ -1,4 +1,4 @@
-import { test, expect, login } from './support';
+import { test, expect, login, clickNav } from './support';
 import { device } from '../fixtures/network';
 test('K10: siguiente conserva cursor/límite, caducado exige reinicio, revocación confirma y devuelve foco', async ({
   page,
@@ -22,7 +22,7 @@ test('K10: siguiente conserva cursor/límite, caducado exige reinicio, revocaci�
       });
   });
   await login(page);
-  await page.getByRole('link', { name: 'Equipos', exact: true }).click();
+  await clickNav(page, 'Equipos');
   await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
   await expect(page.getByText('La lista caducó. Reiníciala para continuar.')).toBeVisible();
   expect(queries.at(-1)).toBe('?limit=20&cursor=' + cursor);
@@ -47,7 +47,7 @@ test('429 de lectura no se salta al pulsar reiniciar y no genera bucle', async (
     });
   });
   await login(page);
-  await page.getByRole('link', { name: 'Equipos', exact: true }).click();
+  await clickNav(page, 'Equipos');
   await expect(
     page.getByText('Demasiados intentos. Espera antes de volver a intentarlo.'),
   ).toBeVisible();

@@ -1,5 +1,7 @@
 // guestOnly: la ruta solo tiene sentido sin sesión (entrar o pedir cuenta). Con sesión no se
 // muestra en la barra y, si se abre por dirección, el portal lleva a la cuenta.
+// info: página informativa pública. Sin sesión va en la barra; con sesión, en el pie (la barra
+// con sesión ya lleva Descarga, Equipos y el menú «Mi cuenta»).
 export const routes = [
   {
     id: 'home',
@@ -8,6 +10,52 @@ export const routes = [
     nav: 'Inicio',
     access: 'public',
     guestOnly: false,
+    info: false,
+  },
+  {
+    id: 'howItWorks',
+    path: '/como-funciona',
+    title: 'Cómo funciona',
+    nav: 'Cómo funciona',
+    access: 'public',
+    guestOnly: false,
+    info: true,
+  },
+  {
+    id: 'technology',
+    path: '/tecnologia',
+    title: 'Tecnología',
+    nav: 'Tecnología',
+    access: 'public',
+    guestOnly: false,
+    info: true,
+  },
+  {
+    id: 'structures',
+    path: '/estructuras',
+    title: 'Estructuras de datos',
+    nav: 'Estructuras',
+    access: 'public',
+    guestOnly: false,
+    info: true,
+  },
+  {
+    id: 'desktopApp',
+    path: '/aplicacion',
+    title: 'La aplicación',
+    nav: 'Aplicación',
+    access: 'public',
+    guestOnly: false,
+    info: true,
+  },
+  {
+    id: 'faq',
+    path: '/preguntas',
+    title: 'Preguntas frecuentes',
+    nav: 'Preguntas',
+    access: 'public',
+    guestOnly: false,
+    info: true,
   },
   {
     id: 'register',
@@ -16,6 +64,7 @@ export const routes = [
     nav: 'Registro',
     access: 'public',
     guestOnly: true,
+    info: false,
   },
   {
     id: 'access',
@@ -24,6 +73,7 @@ export const routes = [
     nav: 'Acceso',
     access: 'public',
     guestOnly: true,
+    info: false,
   },
   {
     id: 'recover',
@@ -32,6 +82,7 @@ export const routes = [
     nav: null,
     access: 'public',
     guestOnly: false,
+    info: false,
   },
   {
     id: 'confirm',
@@ -40,6 +91,7 @@ export const routes = [
     nav: null,
     access: 'public',
     guestOnly: false,
+    info: false,
   },
   {
     id: 'newPassword',
@@ -48,6 +100,7 @@ export const routes = [
     nav: null,
     access: 'public',
     guestOnly: false,
+    info: false,
   },
   {
     id: 'account',
@@ -56,6 +109,7 @@ export const routes = [
     nav: null,
     access: 'protected',
     guestOnly: false,
+    info: false,
   },
   {
     id: 'preferences',
@@ -64,6 +118,7 @@ export const routes = [
     nav: null,
     access: 'protected',
     guestOnly: false,
+    info: false,
   },
   {
     id: 'consents',
@@ -72,6 +127,7 @@ export const routes = [
     nav: null,
     access: 'protected',
     guestOnly: false,
+    info: false,
   },
   {
     id: 'download',
@@ -80,6 +136,7 @@ export const routes = [
     nav: 'Descarga',
     access: 'protected',
     guestOnly: false,
+    info: false,
   },
   {
     id: 'devices',
@@ -88,6 +145,7 @@ export const routes = [
     nav: 'Equipos',
     access: 'protected',
     guestOnly: false,
+    info: false,
   },
 ] as const;
 
@@ -95,7 +153,7 @@ export type RouteId = (typeof routes)[number]['id'];
 export type Route = (typeof routes)[number];
 
 // Tabla cerrada de rutas. Invariante: cada path aparece una sola vez.
-// La búsqueda usa la clave del Map: O(1) en promedio. Hay 11 rutas fijas.
+// La búsqueda usa la clave del Map: O(1) en promedio. Hay 16 rutas fijas.
 const byPath = new Map<string, Route>(routes.map((route) => [route.path, route]));
 
 export function routeByPath(pathname: string): Route | undefined {
@@ -111,15 +169,25 @@ export function isGuestOnly(route: Route | undefined): boolean {
   return route?.guestOnly === true;
 }
 
-// Enlaces de la barra principal. Sin sesión: Inicio, Registro y Acceso (el último, destacado).
-// Con sesión: Inicio, Descarga y Equipos; nunca Acceso ni Registro. El perfil, las
-// preferencias y los consentimientos van en el menú «Mi cuenta». Recorre las 11 rutas: O(n).
+// Enlaces de la barra principal. Sin sesión: Inicio, las cinco páginas informativas, Registro y
+// Acceso (el último, destacado). Con sesión: Inicio, Descarga y Equipos; nunca Acceso ni
+// Registro. El perfil, las preferencias y los consentimientos van en el menú «Mi cuenta».
+// Recorre las 16 rutas: O(n).
 export function navItems(signedIn: boolean): Route[] {
   return routes.filter((route) => {
     if (route.nav === null) return false;
-    if (signedIn) return !route.guestOnly;
+    if (signedIn) return !route.guestOnly && !route.info;
     return route.access === 'public';
   });
+}
+
+// Páginas informativas, en el orden de la barra. Las usa el pie con y sin sesión: O(n).
+export function infoPages(): Route[] {
+  return routes.filter((route) => route.info);
+}
+
+export function isInfo(route: Route | undefined): boolean {
+  return route?.info === true;
 }
 
 // Menú «Mi cuenta» (solo con sesión). Tres rutas protegidas que antes eran un segundo menú

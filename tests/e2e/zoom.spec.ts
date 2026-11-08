@@ -97,7 +97,7 @@ test('con la escala al 200 % se usan acceso, recuperación y el diálogo', async
   await activateScale(page, session);
   await tabUntil(page, page.getByRole('button', { name: 'Ver cuenta de ejemplo' }));
   await page.keyboard.press('Enter');
-  await tabUntil(page, page.getByRole('link', { name: 'Equipos' }));
+  await tabUntil(page, mainNav(page).getByRole('link', { name: 'Equipos' }));
   await page.keyboard.press('Enter');
   const remove = page.getByRole('button', { name: 'Revocar equipo' });
   await tabUntil(page, remove);
@@ -159,7 +159,7 @@ async function openExampleDialog(page: Page) {
   // Por debajo de 62rem de ancho CSS los enlaces están tras el botón de menú.
   const toggle = page.getByRole('button', { name: 'Abrir menú' });
   if (await toggle.isVisible()) await toggle.click();
-  await page.getByRole('link', { name: 'Equipos' }).click();
+  await mainNav(page).getByRole('link', { name: 'Equipos' }).click();
   await page.getByRole('button', { name: 'Revocar equipo' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 }
@@ -222,4 +222,9 @@ async function fits(page: Page) {
   return page.evaluate(
     () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
   );
+}
+
+// El pie de página repite la navegación: los enlaces de la barra se buscan dentro de ella.
+function mainNav(page: Page) {
+  return page.getByRole('navigation', { name: 'Principal' });
 }

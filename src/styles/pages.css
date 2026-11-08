@@ -340,26 +340,70 @@
   font-size: 0.8rem;
 }
 
-.demo-zone {
-  padding: var(--space-5);
-  border: 2px dashed var(--tone-warn-fill);
-  border-radius: var(--radius-xl);
-  background: var(--surface);
-}
-.demo-note {
-  display: flex;
-  gap: var(--space-2);
-  align-items: flex-start;
+/* Vista conceptual de la aplicación en el panel: captura real, resultados y capas, sin cifras. */
+.app-preview-lead {
   margin: 0 0 var(--space-4);
+  max-width: 44rem;
+}
+.app-preview-grid {
+  display: grid;
+  gap: var(--space-4);
+  align-items: start;
+}
+.app-preview-copy {
+  display: grid;
+  gap: var(--space-4);
+}
+.app-preview-copy .card h3 {
+  margin: 0 0 var(--space-3);
+}
+.verdict-scale {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.verdict-scale li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.verdict-scale li span:last-child {
   color: var(--muted);
+  font-size: 0.9rem;
 }
-.demo-note .icon {
-  margin-top: 0.2rem;
-  color: var(--tone-warn-fill);
+.layer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.demo-zone .kpi-icon {
-  background: var(--tone-warn-bg);
-  color: var(--tone-warn-fill);
+.layer-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.layer-chips .icon {
+  color: var(--accent);
+}
+.layer-note {
+  margin: var(--space-3) 0 0;
+  font-size: 0.9rem;
+}
+@media (min-width: 64rem) {
+  .app-preview-grid {
+    grid-template-columns: 1.3fr 1fr;
+  }
 }
 
 .chart-grid {
@@ -803,17 +847,23 @@
   height: 1.75rem;
   color: var(--accent);
 }
-.device-card.preview {
-  width: min(20rem, 100%);
-  margin: var(--space-4) auto 0;
-  padding: var(--space-4);
+.empty-points {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
   text-align: left;
-  border: 2px dashed var(--tone-warn-fill);
-  border-radius: var(--radius-lg);
-  background: var(--card-2);
 }
-.device-card.preview p {
-  margin: var(--space-1) 0 0;
+.empty-points li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.empty-points .icon {
+  color: var(--accent);
 }
 .device-name {
   font-weight: 800;
@@ -825,7 +875,8 @@
   text-align: center;
   gap: var(--space-2);
   padding: var(--space-6) var(--space-4);
-  border: 1px dashed var(--line);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
   border-radius: var(--radius-xl);
   background: var(--card);
 }

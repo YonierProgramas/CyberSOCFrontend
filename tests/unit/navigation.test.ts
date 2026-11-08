@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   accountMenu,
   inAccountMenu,
+  infoPages,
   isGuestOnly,
+  isInfo,
   isProtected,
   navItems,
   routeByPath,
@@ -25,8 +27,34 @@ describe('rutas', () => {
   });
 
   it('con sesión la barra no ofrece Acceso ni Registro', () => {
-    expect(navItems(false).map((route) => route.nav)).toEqual(['Inicio', 'Registro', 'Acceso']);
+    expect(navItems(false).map((route) => route.nav)).toEqual([
+      'Inicio',
+      'Cómo funciona',
+      'Tecnología',
+      'Estructuras',
+      'Aplicación',
+      'Preguntas',
+      'Registro',
+      'Acceso',
+    ]);
     expect(navItems(true).map((route) => route.nav)).toEqual(['Inicio', 'Descarga', 'Equipos']);
+  });
+
+  it('las cinco páginas informativas son públicas y sirven con o sin sesión', () => {
+    const pages = infoPages();
+    expect(pages.map((route) => route.path)).toEqual([
+      '/como-funciona',
+      '/tecnologia',
+      '/estructuras',
+      '/aplicacion',
+      '/preguntas',
+    ]);
+    for (const route of pages) {
+      expect(isProtected(route)).toBe(false);
+      expect(isGuestOnly(route)).toBe(false);
+      expect(isInfo(routeByPath(route.path))).toBe(true);
+    }
+    expect(isInfo(routeByPath('/'))).toBe(false);
   });
 
   it('«Mi cuenta» agrupa perfil, preferencias y consentimientos, todos protegidos', () => {

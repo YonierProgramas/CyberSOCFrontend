@@ -1,4 +1,4 @@
-import { expect, test, login, openAccountPage } from './support';
+import { expect, test, login, openAccountPage, clickNav } from './support';
 test('acceso valida/focaliza, muestra clave y bloquea doble envío sin mensaje upstream', async ({
   page,
   mock,
@@ -98,11 +98,11 @@ test('release ausente: Instalador pendiente; equipo vacío real y recarga pide l
 }) => {
   mock.emptyDevices();
   await login(page);
-  await page.getByRole('link', { name: 'Descarga', exact: true }).click();
+  await clickNav(page, 'Descarga');
   await expect(page.getByText('Instalador pendiente.', { exact: true })).toBeVisible();
   await expect(page.locator('a[href*="github.com"]')).toHaveCount(0);
   expect(mock.requests.filter((item) => item.path === '/v1/downloads')).toHaveLength(0);
-  await page.getByRole('link', { name: 'Equipos', exact: true }).click();
+  await clickNav(page, 'Equipos');
   await expect(page.getByText('Todavía no hay equipos vinculados.')).toBeVisible();
   await page.reload();
   await expect(page).toHaveURL('/acceso');
@@ -110,7 +110,7 @@ test('release ausente: Instalador pendiente; equipo vacío real y recarga pide l
 test('solo POST válido muestra URL; no se visita ni descarga fixture', async ({ page, mock }) => {
   mock.setAvailable(true);
   await login(page);
-  await page.getByRole('link', { name: 'Descarga', exact: true }).click();
+  await clickNav(page, 'Descarga');
   await expect(page.locator('a[href*="github.com"]')).toHaveCount(0);
   await page.getByRole('button', { name: 'Descargar', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Obtener instalador 0.0.0-local' })).toHaveAttribute(

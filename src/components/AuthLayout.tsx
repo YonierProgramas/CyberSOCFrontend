@@ -43,7 +43,7 @@ export function AuthLayout({
           <span className="ring ring-2" />
           <Shield className="hero-shield" />
         </div>
-        <p className="auth-eyebrow">Demo académica cerrada</p>
+        <p className="auth-eyebrow">Antivirus de escritorio para Windows</p>
         <p className="auth-claim">Tu antivirus de escritorio, explicado paso a paso.</p>
         <ul className="auth-points">
           {points.map((point) => (
