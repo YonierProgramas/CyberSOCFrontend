@@ -29,8 +29,8 @@ export function RecoveryPage({ onNavigate }: { onNavigate: (path: string) => voi
       }}
     >
       <p className="muted">
-        Recuperación para cuentas existentes. La demo mantiene el registro cerrado. El mensaje es el
-        mismo exista o no la cuenta, para no revelar qué correos están registrados.
+        Recuperación para cuentas existentes. El mensaje es el mismo exista o no la cuenta, para no
+        revelar qué correos están registrados.
       </p>
       <FormField
         id="correo-recuperar"

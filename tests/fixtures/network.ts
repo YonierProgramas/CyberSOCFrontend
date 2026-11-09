@@ -3,7 +3,7 @@ export const config: PublicConfig = {
   apiBaseUrl: 'https://cybersocbackend.onrender.com',
   supabaseUrl: 'https://cgvjthwobrlzmhmzuuvg.supabase.co',
   publishableKey: 'sb_publishable_ejemplo_local_no_real_0000',
-  signupMode: 'closed',
+  signupMode: 'open',
   confirmSignupType: 'signup',
 };
 export const ownerA = '11111111-1111-4111-8111-111111111111';
@@ -96,6 +96,10 @@ export function fakeServer() {
         return json(pair(profile.userId, b ? 'b' : 'a'));
       }
       return json(pair(profile.userId, 'rotated'));
+    }
+    if (url.pathname === '/auth/v1/signup') {
+      missing = true;
+      return json(pair());
     }
     if (url.pathname === '/auth/v1/verify') return json(pair());
     if (url.pathname === '/auth/v1/recover') return json({});

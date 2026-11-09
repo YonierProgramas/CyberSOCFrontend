@@ -49,10 +49,34 @@ export function AccessPage({
       }}
     >
       <p className="muted">
-        Usa una cuenta existente de la demo. Al recargar o abrir otra pestaña tendrás que entrar de
-        nuevo.
+        Entra con tu cuenta o usa una de las cuentas de demostración. Al recargar o abrir otra
+        pestaña tendrás que entrar de nuevo.
       </p>
       {notice ? <StatusMessage kind="info">{notice}</StatusMessage> : null}
+      <section className="demo-access" aria-label="Cuentas de demostración">
+        <strong>Acceso para el profesor</strong>
+        <p>Cuentas públicas de demostración:</p>
+        <dl>
+          <div>
+            <dt>Cuenta 1</dt>
+            <dd>
+              Correo: <code>usuario1@gmail.com</code>
+            </dd>
+            <dd>
+              Contraseña: <code>demo123A*</code>
+            </dd>
+          </div>
+          <div>
+            <dt>Cuenta 2</dt>
+            <dd>
+              Correo: <code>usuario2@gmail.com</code>
+            </dd>
+            <dd>
+              Contraseña: <code>demo123B*</code>
+            </dd>
+          </div>
+        </dl>
+      </section>
       <FormField
         id="correo"
         label="Correo"
@@ -85,7 +109,7 @@ export function AccessPage({
           Olvidé mi contraseña
         </RouteLink>
         <RouteLink href="/registro" onNavigate={onNavigate}>
-          Cómo se obtiene una cuenta
+          Crear una cuenta
         </RouteLink>
       </div>
     </form>

@@ -47,7 +47,7 @@ test('con la escala al 200 % se usan acceso, recuperación y el diálogo', async
     page.getByRole('button', { name: 'Mostrar contraseña' }),
     page.getByRole('button', { name: 'Entrar' }),
     page.getByRole('link', { name: 'Olvidé mi contraseña' }),
-    page.getByRole('link', { name: 'Cómo se obtiene una cuenta' }),
+    page.getByRole('link', { name: 'Crear una cuenta' }),
   ]) {
     await tabUntil(page, control);
     await expectInView(control);

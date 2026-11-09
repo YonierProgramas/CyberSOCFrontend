@@ -772,7 +772,7 @@ const faqGroups: { title: string; icon: IconName; items: { q: string; a: string 
     items: [
       {
         q: '¿Cómo obtengo una cuenta?',
-        a: 'El registro público está cerrado: las cuentas las crea el equipo del proyecto. La página Registro explica cómo funciona.',
+        a: 'Puedes crear una cuenta en Registro con tu correo y una contraseña. En esta demostración la cuenta se activa de inmediato, sin confirmar el correo. También hay dos cuentas de prueba en Acceso.',
       },
       {
         q: '¿Qué sistemas operativos son compatibles?',

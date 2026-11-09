@@ -27,6 +27,9 @@ const messages = {
   LINK_INVALID: 'El enlace venció o ya se usó. Pide uno nuevo.',
   RECOVERY_REQUIRED: 'Pide un enlace de recuperación nuevo.',
   SIGNUP_CLOSED: 'Registro cerrado. La demo no acepta cuentas nuevas.',
+  SIGNUP_FAILED: 'No se pudo crear la cuenta. Revisa los datos o entra si ya tienes una cuenta.',
+  SIGNUP_CONFIRMATION_REQUIRED:
+    'El servicio aún exige confirmar el correo. La cuenta no tiene una sesión activa; contacta al equipo para habilitarla.',
 } as const;
 export type FaultCode = keyof typeof messages;
 export class PortalError extends Error {

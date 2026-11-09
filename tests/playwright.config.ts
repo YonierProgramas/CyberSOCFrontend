@@ -4,7 +4,7 @@ const env = {
   VITE_API_BASE_URL: 'https://cybersocbackend.onrender.com',
   VITE_SUPABASE_URL: 'https://cgvjthwobrlzmhmzuuvg.supabase.co',
   VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_ejemplo_local_no_real_0000',
-  VITE_SIGNUP_MODE: 'closed',
+  VITE_SIGNUP_MODE: 'open',
   VITE_CONFIRM_SIGNUP_TYPE: 'signup',
 };
 

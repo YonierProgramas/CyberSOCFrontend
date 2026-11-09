@@ -32,7 +32,7 @@ export function AccountPage({ onNavigate }: { onNavigate: (path: string) => void
           </div>
           <div className="profile-badges">
             <Badge tone="ok">Sesión activa</Badge>
-            <Badge tone="accent">Demo cerrada</Badge>
+            <Badge tone="accent">Proyecto académico</Badge>
           </div>
         </section>
       ) : missing ? (

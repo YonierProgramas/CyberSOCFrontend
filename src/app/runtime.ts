@@ -8,6 +8,7 @@ export function createPortalRuntime(config: PublicConfig, fetcher: Fetcher = fet
   const auth = createAuthClient(config, fetcher);
   const session = createSessionStore(auth);
   return {
+    signupOpen: config.signupMode === 'open',
     session,
     api: createAccountApi(session, config, fetcher),
     confirmation: createConfirmationFlow(session),

@@ -197,6 +197,8 @@ function Footer({
           <p className="footer-heading">Proyecto académico</p>
           <ul>
             <li>Estructuras de Datos</li>
+            <li>Yonnier urbano</li>
+            <li>Samuel Pazos</li>
             <li>Universidad Cooperativa de Colombia</li>
             <li>2026</li>
           </ul>

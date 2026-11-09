@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSessionStore, type SessionStore } from '../../src/auth/session';
-import {
-  createAuthClient,
-  signupClosed,
-  type AuthClient,
-  type AuthTokens,
-} from '../../src/auth/authClient';
+import { createAuthClient, type AuthClient, type AuthTokens } from '../../src/auth/authClient';
 import { createConfirmationFlow, parseConfirmSearch } from '../../src/auth/confirmFlow';
 import { PortalError } from '../../src/api/fault';
 import { config, fakeServer, ownerA, ownerB, pair } from '../fixtures/network';
@@ -21,6 +16,7 @@ function deferred<T>() {
 function authDouble(overrides: Partial<AuthClient> = {}): AuthClient {
   return {
     signIn: vi.fn(async () => pair()),
+    signUp: vi.fn(async () => pair()),
     refresh: vi.fn(async () => pair(ownerA, 'rotated')),
     verify: vi.fn(async () => pair()),
     recover: vi.fn(async () => undefined),
@@ -263,7 +259,7 @@ describe('anexo A y decisión expresa de refresh desconocido', () => {
     expect(session.getSnapshot().session).toBeNull();
   });
 });
-describe('confirmación única y demo cerrada', () => {
+describe('confirmación única y recuperación', () => {
   it.each(['signup', 'recovery'] as const)(
     'S-06/S-15: limpia URL antes de verificar %s, incluso con montaje doble',
     async (type) => {
@@ -360,12 +356,11 @@ describe('confirmación única y demo cerrada', () => {
     expect(auth.verify).toHaveBeenCalledTimes(1);
     expect(second.getSnapshot().status).toBe('error');
   });
-  it('S-07: alta cerrada no envía; recuperación 200/400 desconocido tiene mismo resultado neutro', async () => {
+  it('S-07: recuperación 200/400 desconocido tiene mismo resultado neutro', async () => {
     const fetcher = vi.fn(
       async () => new Response('{}', { headers: { 'Content-Type': 'application/json' } }),
     );
     const auth = createAuthClient(config, fetcher);
-    expect(signupClosed).toThrowError('Registro cerrado');
     expect(fetcher).not.toHaveBeenCalled();
     await expect(
       auth.recover('existing@example.invalid', new AbortController().signal),

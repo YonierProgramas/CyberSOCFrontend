@@ -25,7 +25,7 @@ export const publicConfigSchema = z
     apiBaseUrl: httpsUrl.refine((value) => new URL(value).origin === API_ORIGIN),
     supabaseUrl: httpsUrl.refine((value) => new URL(value).origin === AUTH_ORIGIN),
     publishableKey: z.string().regex(/^sb_publishable_[A-Za-z0-9_-]{20,}$/),
-    signupMode: z.literal('closed'),
+    signupMode: z.enum(['closed', 'open']),
     confirmSignupType: z.literal(CONFIRM_SIGNUP_TYPE),
   })
   .strict();

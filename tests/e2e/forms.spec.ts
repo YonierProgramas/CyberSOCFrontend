@@ -41,12 +41,99 @@ test('acceso valida/focaliza, muestra clave y bloquea doble envío sin mensaje u
   expect(mock.requests.filter((item) => item.path.includes('password'))).toHaveLength(0);
   expect(hits).toBe(1);
 });
-test('registro cerrado no tiene formulario ni solicitudes', async ({ page, mock }) => {
+test('registro valida, crea sesión activa y permite completar el perfil', async ({
+  page,
+  mock,
+}) => {
   await page.goto('/registro');
-  await expect(page.getByText('Registro cerrado. La demo no acepta cuentas nuevas.')).toBeVisible();
-  await expect(page.locator('input')).toHaveCount(0);
-  await expect(page.getByText('no llega a Gmail')).toBeVisible();
+  const submit = page.getByRole('button', { name: 'Crear cuenta', exact: true });
+  await submit.click();
+  await expect(page.getByLabel('Correo')).toBeFocused();
   expect(mock.requests).toHaveLength(0);
+  await page.getByLabel('Correo').fill('nuevo@example.invalid');
+  await page.getByLabel('Contraseña', { exact: true }).fill('valid-password');
+  await page.getByLabel('Repite la contraseña').fill('different-password');
+  await submit.click();
+  await expect(page.getByLabel('Repite la contraseña')).toBeFocused();
+  await expect(page.getByText('Las contraseñas no coinciden.')).toBeVisible();
+  expect(mock.requests).toHaveLength(0);
+  await page.getByLabel('Repite la contraseña').fill('valid-password');
+  await submit.click();
+  await expect(page).toHaveURL('/cuenta');
+  await expect(page.getByText('Crea tu perfil para continuar.')).toBeVisible();
+  expect(
+    mock.requests.filter((item) => item.path === '/auth/v1/signup').map((item) => item.body),
+  ).toEqual([{ email: 'nuevo@example.invalid', password: 'valid-password' }]);
+  await page.getByLabel('Nombre visible').fill('Nuevo estudiante');
+  await page.getByRole('button', { name: 'Crear perfil' }).click();
+  await expect(page.getByRole('button', { name: 'Guardar nombre' })).toBeVisible();
+});
+
+test('registro bloquea doble envío y 429 sin reintentar ni mostrar mensajes privados', async ({
+  page,
+}) => {
+  let hits = 0;
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/auth/v1/signup', async (route) => {
+    hits += 1;
+    await pending;
+    await route.fulfill({
+      status: 429,
+      headers: { 'Retry-After': '60' },
+      contentType: 'application/json',
+      body: JSON.stringify({ msg: 'private-upstream' }),
+    });
+  });
+  await page.goto('/registro');
+  await page.getByLabel('Correo').fill('nuevo@example.invalid');
+  await page.getByLabel('Contraseña', { exact: true }).fill('valid-password');
+  await page.getByLabel('Repite la contraseña').fill('valid-password');
+  const button = page.getByRole('button', { name: 'Crear cuenta', exact: true });
+  await button.click();
+  await expect(button).toBeDisabled();
+  await expect.poll(() => hits).toBe(1);
+  release();
+  await expect(
+    page.getByText('Demasiados intentos. Espera antes de volver a intentarlo.'),
+  ).toBeVisible();
+  await expect(button).toBeDisabled();
+  await expect(page.getByLabel('Contraseña', { exact: true })).toHaveValue('');
+  await expect(page.getByLabel('Repite la contraseña')).toHaveValue('');
+  await expect(page.locator('body')).not.toContainText('private-upstream');
+  expect(hits).toBe(1);
+});
+
+test('registro con confirmación pendiente no inventa una sesión activa', async ({ page }) => {
+  await page.route('**/auth/v1/signup', (route) =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ id: '11111111-1111-4111-8111-111111111111' }),
+    }),
+  );
+  await page.goto('/registro');
+  await page.getByLabel('Correo').fill('nuevo@example.invalid');
+  await page.getByLabel('Contraseña', { exact: true }).fill('valid-password');
+  await page.getByLabel('Repite la contraseña').fill('valid-password');
+  await page.getByRole('button', { name: 'Crear cuenta', exact: true }).click();
+  await expect(
+    page.getByText('El servicio aún exige confirmar el correo.', { exact: false }),
+  ).toBeVisible();
+  await expect(page).toHaveURL('/registro');
+  await expect(page.getByRole('button', { name: 'Mi cuenta' })).toHaveCount(0);
+});
+
+test('acceso muestra las cuentas del profesor y el pie identifica a los integrantes', async ({
+  page,
+}) => {
+  await page.goto('/acceso');
+  const demo = page.getByRole('region', { name: 'Cuentas de demostración' });
+  for (const text of ['usuario1@gmail.com', 'demo123A*', 'usuario2@gmail.com', 'demo123B*'])
+    await expect(demo.getByText(text, { exact: true })).toBeVisible();
+  await expect(page.getByRole('contentinfo')).toContainText('Yonnier urbano');
+  await expect(page.getByRole('contentinfo')).toContainText('Samuel Pazos');
 });
 test('perfil inexistente abre creación y preferencias se guardan por API', async ({
   page,

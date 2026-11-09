@@ -205,6 +205,8 @@ export function createSessionStore(auth: AuthClient, now: () => number = () => D
     activity,
     signIn: (email: string, password: string) =>
       begin('access', (signal) => auth.signIn(email, password, signal)),
+    signUp: (email: string, password: string) =>
+      begin('access', (signal) => auth.signUp(email, password, signal)),
     verify: (input: ConfirmInput) =>
       begin(input.type === 'recovery' ? 'recovery' : 'access', (signal) =>
         auth.verify(input, signal),

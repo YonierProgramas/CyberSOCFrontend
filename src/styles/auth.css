@@ -1,3 +1,25 @@
+.demo-access {
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--tone-accent-bg);
+  overflow-wrap: anywhere;
+}
+.demo-access p,
+.demo-access dl {
+  margin: var(--space-2) 0 0;
+}
+.demo-access dl {
+  display: grid;
+  gap: var(--space-3);
+}
+.demo-access dt {
+  font-weight: 600;
+}
+.demo-access dd {
+  margin: 0;
+}
+
 /* Pantallas públicas de acceso (AuthLayout): tarjeta con el formulario y panel de marca.
    Una columna en móvil (primero el formulario); dos columnas desde 56rem con el panel a la
    izquierda. El panel solo cambia de lugar con CSS: el orden del DOM no varía. */

@@ -20,7 +20,7 @@ test('el ejemplo público no trae secretos', async () => {
   assert.equal(example.includes('TEST_USER'), false);
   assert.equal(example.includes('ETHEREAL'), false);
   assert.equal(example.includes('ANTHROPIC'), false);
-  assert.match(example, /VITE_SIGNUP_MODE=closed/);
+  assert.match(example, /VITE_SIGNUP_MODE=open/);
 });
 
 test('las versiones elegidas no usan rangos', async () => {

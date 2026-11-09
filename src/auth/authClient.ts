@@ -15,6 +15,7 @@ export type AuthTokens = z.infer<typeof tokensSchema>;
 export type ConfirmInput = { tokenHash: string; type: typeof CONFIRM_SIGNUP_TYPE | 'recovery' };
 export interface AuthClient {
   signIn(email: string, password: string, signal: AbortSignal): Promise<AuthTokens>;
+  signUp(email: string, password: string, signal: AbortSignal): Promise<AuthTokens>;
   refresh(token: string, signal: AbortSignal): Promise<AuthTokens>;
   verify(input: ConfirmInput, signal: AbortSignal): Promise<AuthTokens>;
   recover(email: string, signal: AbortSignal): Promise<void>;
@@ -72,6 +73,23 @@ export function createAuthClient(config: PublicConfig, fetcher: Fetcher = fetch)
     return parsed.data;
   }
   return {
+    async signUp(email, password, signal) {
+      if (config.signupMode !== 'open') throw new PortalError('SIGNUP_CLOSED');
+      validEmail(email);
+      validPassword(password, 8);
+      let data;
+      try {
+        data = await call('signup', 'POST', { email, password }, signal);
+      } catch (error) {
+        if (error instanceof PortalError && error.status >= 400 && error.status < 429)
+          throw new PortalError('SIGNUP_FAILED', error.status);
+        throw error;
+      }
+      const parsed = tokensSchema.safeParse(data);
+      if (parsed.success) return parsed.data;
+      if (userSchema.safeParse(data).success) throw new PortalError('SIGNUP_CONFIRMATION_REQUIRED');
+      throw new PortalError('UNKNOWN_OUTCOME');
+    },
     async signIn(email, password, signal) {
       validEmail(email);
       validPassword(password);
@@ -116,7 +134,4 @@ export function createAuthClient(config: PublicConfig, fetcher: Fetcher = fetch)
       await call('logout?scope=' + scope, 'POST', undefined, signal, token);
     },
   };
-}
-export function signupClosed(): never {
-  throw new PortalError('SIGNUP_CLOSED');
 }
