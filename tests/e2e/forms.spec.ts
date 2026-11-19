@@ -132,7 +132,7 @@ test('acceso muestra las cuentas del profesor y el pie identifica a los integran
   const demo = page.getByRole('region', { name: 'Cuentas de demostración' });
   for (const text of ['usuario1@gmail.com', 'demo123A*', 'usuario2@gmail.com', 'demo123B*'])
     await expect(demo.getByText(text, { exact: true })).toBeVisible();
-  await expect(page.getByRole('contentinfo')).toContainText('Yonnier urbano');
+  await expect(page.getByRole('contentinfo')).toContainText('Yonier urbano');
   await expect(page.getByRole('contentinfo')).toContainText('Samuel Pazos');
 });
 test('perfil inexistente abre creación y preferencias se guardan por API', async ({
